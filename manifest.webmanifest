@@ -1,5 +1,5 @@
 {
-  "name": "ひるしか",
+  "name": "ひるしか Ver.0.3",
   "short_name": "ひるしか",
   "description": "昼しか、見ない。食べる時間を、ちょっと楽しく。",
   "start_url": "./index.html",
@@ -7,6 +7,11 @@
   "background_color": "#f6efe4",
   "theme_color": "#4b3427",
   "icons": [
-    {"src":"assets/hirushika.png","sizes":"1024x1024","type":"image/png","purpose":"any maskable"}
+    {
+      "src": "assets/hirushika.png",
+      "sizes": "1024x1024",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
   ]
 }
