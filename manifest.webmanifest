@@ -1,17 +1,11 @@
 {
-  "name": "ひるしか Ver.0.4",
-  "short_name": "ひるしか",
-  "description": "昼しか、見ない。食べる前も、食べてる間も。",
-  "start_url": "./index.html",
-  "display": "standalone",
-  "background_color": "#f6efe4",
-  "theme_color": "#4b3427",
-  "icons": [
-    {
-      "src": "assets/hirushika.png",
-      "sizes": "1024x1024",
-      "type": "image/png",
-      "purpose": "any maskable"
-    }
+  "name":"ひるしか",
+  "short_name":"ひるしか",
+  "start_url":"./",
+  "display":"standalone",
+  "background_color":"#f6efe4",
+  "theme_color":"#4b3427",
+  "icons":[
+    {"src":"assets/hirushika.png","sizes":"512x512","type":"image/png","purpose":"any maskable"}
   ]
 }

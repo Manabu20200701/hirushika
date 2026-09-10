@@ -1,48 +1,147 @@
-<!doctype html><html lang="ja"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#4b3427"><meta name="apple-mobile-web-app-capable" content="yes"><title>ひるしか Ver.0.4</title><link rel="manifest" href="manifest.webmanifest"><style>
-:root{--bg:#f6efe4;--card:#fffaf2;--ink:#4b3427;--accent:#c78c52;--line:#e6d3bf}*{box-sizing:border-box}body{margin:0;font-family:system-ui,-apple-system,'Noto Sans JP','Segoe UI',sans-serif;background:var(--bg);color:var(--ink)}main{max-width:560px;margin:auto;min-height:100dvh;padding:16px 16px calc(24px + env(safe-area-inset-bottom))}.card{background:var(--card);border:1px solid var(--line);border-radius:26px;padding:20px;box-shadow:0 10px 30px #6b4b2d18;min-height:calc(100dvh - 32px);display:flex;flex-direction:column}.hidden{display:none}.hero{align-items:center;text-align:center;justify-content:center}.brand{width:170px;height:170px;object-fit:cover;border-radius:50%;margin-bottom:10px}.mini{width:76px;height:76px;object-fit:cover;border-radius:50%;display:block;margin:0 auto 8px}.title{font-size:38px;font-weight:900}.sub{opacity:.75;line-height:1.7;margin:4px 0 28px}.btns{display:grid;gap:10px;margin-top:auto}.btn{width:100%;min-height:56px;border-radius:17px;border:1px solid var(--line);background:#fff;color:var(--ink);font-size:17px;font-weight:750;padding:13px 15px}.btn:disabled{opacity:.46;background:#eee6dc}.primary{background:var(--ink);color:#fff;border-color:var(--ink)}.danger{font-size:14px;min-height:44px;opacity:.65}input,select{width:100%;font-size:16px;padding:15px;border:1px solid var(--line);border-radius:14px;background:#fff;margin:6px 0 14px}.bubble{white-space:pre-line;font-size:20px;line-height:1.7;margin:12px 0 20px}.meta{display:flex;justify-content:space-between;font-size:13px;opacity:.65}.progress{height:8px;background:#eadbcb;border-radius:99px;overflow:hidden;margin:10px 0}.progress div{height:100%;background:var(--accent)}.muted{opacity:.65;font-size:14px;line-height:1.6}.memory{background:#f0e3d5;border-radius:15px;padding:12px;margin-bottom:14px;font-size:14px;line-height:1.55}.summary{font-size:17px;line-height:1.9;margin:14px 0}.deep{background:#f0e3d5;border-radius:16px;padding:15px;margin-top:8px;font-size:17px;line-height:1.75}@media(min-width:600px){main{padding:24px}.card{min-height:700px}}
-</style></head><body><main>
-<section id="home" class="card hero"><img class="brand" src="assets/hirushika-hero.png" alt="ひるしか"><div class="title">ひるしか</div><div class="sub">昼しか、見ない。<br>食べる前も、食べてる間も。</div><div class="btns" style="width:100%"><button class="btn primary" onclick="showStart()">ランチする</button><button class="btn" onclick="startConsult()">何食べる？</button><button id="installBtn" class="btn hidden">ホーム画面に追加</button></div><p class="muted">Ver.0.4｜何食べる？追加版</p></section>
-<section id="consult" class="card hidden"><img class="mini" src="assets/hirushika-hero.png"><div class="meta"><span>何食べる？</span><span>ひるしか相談</span></div><div id="consultBubble" class="bubble"></div><div id="consultControls" class="btns"></div></section>
-<section id="start" class="card hidden"><img class="mini" src="assets/hirushika-hero.png"><h2>今日のランチ</h2><label>店・場所</label><input id="place" list="places" placeholder="例：だしや / 自宅 / 会社"><datalist id="places"></datalist><div id="memory" class="memory hidden"></div><label>メニュー</label><input id="menu" placeholder="例：回鍋肉定食"><label>量</label><select id="size"><option>普通</option><option>少なめ</option><option>大盛り</option><option>不明</option></select><div class="btns"><button class="btn primary" onclick="startLunch()">ひるしかと食べる</button><button class="btn" onclick="goHome()">戻る</button></div></section>
-<section id="lunch" class="card hidden"><img class="mini" src="assets/hirushika-hero.png"><div class="meta"><span id="elapsed">0:00</span><span>15分までは急がない</span></div><div class="progress"><div id="bar" style="width:0"></div></div><div id="bubble" class="bubble"></div><div id="controls" class="btns"></div></section>
-<section id="finish" class="card hidden"><img class="mini" src="assets/hirushika-hero.png"><h2>ごちそうさま。</h2><div id="summary" class="summary"></div><div class="btns"><button class="btn primary" onclick="goHome()">ホームへ</button></div></section>
-</main><script>
-const $=id=>document.getElementById(id);let startedAt=0,timer=null,deferredPrompt=null,lockTimer=null;let S={},C={};
-const trivia=[
-{intro:'そういや、便利なものって意外と昔からあるんだよ。\n自販機なんて近代の発明っぽいだろ？\n\nでも、実は古代にもあった。さて――',q:'世界最古級の自動販売機で売られていたものは？',o:['A：ワイン','B：聖水','C：パン'],a:'B',d:'古代アレクサンドリアの技術者ヘロンが記した装置では、硬貨の重みを利用して一定量の聖水を出す仕組みが記されています。',deep:'硬貨を入れると、その重みで受け皿が傾き、てこにつながった栓が一時的に開きます。硬貨が滑り落ちると栓が閉じる。つまり「一定のお金で一定量だけ出す」という自販機の基本発想が、約2000年前にすでにあったわけです。',outro:'2000年前から、人間は「金を入れた分だけ出してほしい」らしい（笑）。'},
-{intro:'飯を食う店のこと、当たり前に「レストラン」って言うけどさ。\n言葉の出発点をたどると、ちょっと今と印象が違う。',q:'「restaurant」という言葉の源に近い意味は？',o:['A：回復させるもの','B：旅人の宿','C：共同の食卓'],a:'A',d:'フランス語の restaurer（回復させる）につながる言葉で、18世紀のパリでは滋養をつける料理などを指す語として使われました。',deep:'当時は、今のように多彩な料理を選ぶ店というより「体を回復させる滋養のあるもの」という意味合いが強かったとされます。そこから、それを提供する店を restaurant と呼ぶようになり、現在の意味へ広がっていきました。',outro:'つまり今日の昼飯も、語源どおりなら「回復」だな。仕事の話は今はいい。'},
-{intro:'最初の一口って、妙にうまく感じることあるだろ。\nでも同じ味を食べ続けると、少しずつ驚きが薄くなる。\n人間、わりと勝手だ（笑）。',q:'同じ刺激にだんだん反応しにくくなる現象は？',o:['A：ハロー効果','B：馴化','C：カクテルパーティー効果'],a:'B',d:'「馴化」。同じ刺激が繰り返されると、それに対する反応が弱くなっていく現象です。',deep:'たとえば部屋に入った直後は匂いを強く感じても、しばらくすると気にならなくなることがあります。脳が変化の少ない刺激への注意を下げるためです。食事でも「最初の感動」と「食べ続けたときの感じ」が違う理由を考えるヒントになります。',outro:'だから最初より評価が下がっても、料理だけのせいとは限らないんだな。'},
-{intro:'午後3時に「おやつ」。\n子どもの頃から普通に使ってるけど、「おやつ」って妙な言葉だよな。数字が隠れてる。',q:'「おやつ」の語源と関係が深いのは？',o:['A：八つ時','B：八種類の菓子','C：八日市'],a:'A',d:'江戸時代の時刻「八つ時」ごろに軽食をとる習慣から「お八つ」と呼ばれるようになったとされます。',deep:'江戸時代の時刻制度では、昼の「八つ時」は現在の午後2時ごろを中心とする時間帯でした。当時は一日二食のことも多く、その間に軽く食べる習慣が「お八つ」と呼ばれ、のちに間食そのものを指す言葉になりました。',outro:'今じゃ八つ時じゃなくても、おやつはおやつ。言葉の方が生き残ったんだな。'}];
-function hide(){['home','consult','start','lunch','finish'].forEach(x=>$(x).classList.add('hidden'))}function goHome(){clearInterval(timer);clearInterval(lockTimer);hide();$('home').classList.remove('hidden');loadPlaces()}function showStart(){hide();$('start').classList.remove('hidden');loadPlaces();$('place').oninput=showMemory}
-function consultSay(text,buttons){$('consultBubble').textContent='🦌 '+text;let c=$('consultControls');c.innerHTML='';buttons.forEach(([t,f,primary=false])=>{let b=document.createElement('button');b.className='btn'+(primary?' primary':'');b.textContent=t;b.onclick=f;c.appendChild(b)});let back=document.createElement('button');back.className='btn danger';back.textContent='ホームへ戻る';back.onclick=goHome;c.appendChild(back)}
-function startConsult(){C={hunger:null,moved:null,mood:null,round:0};hide();$('consult').classList.remove('hidden');let logs=JSON.parse(localStorage.getItem('hirushika:logs')||'[]'),last=logs.at(-1);let lead=last?`昼だな。今日は何にする？\n\n前回の記録は「${last.menu}」。まあ、昨日と同じでも俺は止めない（笑）。\n\nまず、腹の減り具合は？`:'昼だな。今日は何にする？\n\nまず、腹の減り具合は？';consultSay(lead,[['かなり腹減った',()=>consultMoved('high')],['普通',()=>consultMoved('mid')],['軽めでいい',()=>consultMoved('low')]])}
-function consultMoved(v){C.hunger=v;consultSay(v==='high'?'かなりか。軽食って顔じゃないな（笑）。\n\n今朝、なんか体動かした？':v==='low'?'軽めね。了解。\n\n今朝、なんか体動かした？':'普通ね。その「普通」が一番選択肢多いんだよな。\n\n今朝、なんか体動かした？',[['けっこう動いた',()=>consultMood('high')],['少し動いた',()=>consultMood('mid')],['特に何もしてない',()=>consultMood('low')]])}
-function consultMood(v){C.moved=v;let line=v==='high'?'なら、ちゃんと食ってもよさそうだ。':v==='mid'?'少し動いたくらいね。':'了解。そこは無理に健康っぽくしない（笑）。';consultSay(`${line}\n\nで、今日は何に気持ちが向いてる？`,[['米・定食',()=>showSuggestions('rice')],['麺',()=>showSuggestions('noodle')],['カレー・エスニック',()=>showSuggestions('spice')],['なんでもいい',()=>showSuggestions('any')]])}
-const foodPools={
- high:{rice:['生姜焼き定食','回鍋肉定食','ステーキ＋ご飯少なめ'],noodle:['肉蕎麦','ちゃんぽん','担々麺'],spice:['インドカレー','魯肉飯','カオマンガイ'],any:['生姜焼き定食','肉蕎麦','インドカレー','魯肉飯','カオマンガイ']},
- mid:{rice:['焼き魚定食','生姜焼き定食','魯肉飯'],noodle:['蕎麦','酸辣湯麺','パスタ'],spice:['カオマンガイ','タイカレー','魯肉飯'],any:['蕎麦','生姜焼き定食','カオマンガイ','パスタ','魯肉飯']},
- low:{rice:['焼き魚定食 ご飯少なめ','小さめの丼','おにぎり＋汁物'],noodle:['かけ蕎麦','小盛りパスタ','フォー'],spice:['小さめのカオマンガイ','フォー','軽めのタイ料理'],any:['蕎麦','フォー','焼き魚定食 ご飯少なめ','小さめの丼']}
-};
-function pick3(arr,offset=0){let a=[...arr];let n=a.length;return [0,1,2].map(i=>a[(i+offset)%n])}
-function showSuggestions(mood){C.mood=mood;C.round++;let level=C.hunger||'mid',pool=foodPools[level][mood]||foodPools[level].any,s=pick3(pool,(C.round-1)%pool.length);let intro=level==='high'?(C.moved==='high'?'腹も減ってるし、朝も動いてる。今日はこんな3つ。':'腹は減ってる。今日は満足感優先でいこう。'):level==='low'?'軽めなら、この辺が気楽。':'じゃあ、今日はこの3つどうだ。';consultSay(`${intro}\n\n① ${s[0]}\n② ${s[1]}\n③ ${s[2]}\n\nどれが一番「それだ」に近い？`,[[`① ${s[0]}`,()=>chooseFood(s[0]),true],[`② ${s[1]}`,()=>chooseFood(s[1])],[`③ ${s[2]}`,()=>chooseFood(s[2])],['もう一回考える',()=>showSuggestions(mood)]])}
-function chooseFood(food){localStorage.setItem('hirushika:lastSuggestion',JSON.stringify({date:new Date().toISOString(),food,hunger:C.hunger,moved:C.moved,mood:C.mood}));consultSay(`よし、今日は「${food}」でいこう。\n\n店に着いて気が変わったら、それも昼飯だ（笑）。`,[['このままランチへ',()=>{hide();$('start').classList.remove('hidden');$('menu').value=food;loadPlaces();$('place').focus()},true],['やっぱり選び直す',()=>showSuggestions(C.mood)]])}
-function loadPlaces(){let logs=JSON.parse(localStorage.getItem('hirushika:logs')||'[]');$('places').innerHTML=[...new Set(logs.map(x=>x.place).filter(Boolean))].map(p=>`<option value="${p.replaceAll('"','&quot;')}">`).join('')}
-function showMemory(){let p=$('place').value.trim(),logs=JSON.parse(localStorage.getItem('hirushika:logs')||'[]').filter(x=>x.place===p),el=$('memory');if(!logs.length){el.classList.add('hidden');return}let x=logs.at(-1);el.classList.remove('hidden');el.textContent=`🦌 前回：${x.menu} / ${x.size} / ${x.fullness}分目 / ${x.minutes}分。${x.end==='B'?'少なめ候補だった。':''}`}
-function secs(){return Math.floor((Date.now()-startedAt)/1000)}function mins(){return secs()/60}
-function startLunch(){S={place:$('place').value.trim()||'未登録',menu:$('menu').value.trim()||'未登録',size:$('size').value,full:[],rating:null,interests:[],quizIndex:0,fullChecks:0,sensoryDone:false};startedAt=Date.now();hide();$('lunch').classList.remove('hidden');let logs=JSON.parse(localStorage.getItem('hirushika:logs')||'[]').filter(x=>x.place===S.place),prev=logs.at(-1);say(prev?`🦌 ここ、前にも来たな。\n前回は「${prev.menu}」、最後は${prev.fullness}分目。\n\nでも今日は今日。まず食おう。`:'🦌 昼だな。食おう。\n\n最初の数口は、何も考えなくていい。',[["次",firstImpression,12]]);tick();timer=setInterval(tick,1000)}
-function tick(){let s=secs(),m=Math.floor(s/60),r=s%60;$('elapsed').textContent=`${m}:${String(r).padStart(2,'0')}`;$('bar').style.width=Math.min(100,(s/900)*100)+'%'}
-function say(text,buttons,allowEnd=true){clearInterval(lockTimer);$('bubble').textContent=text;let c=$('controls');c.innerHTML='';buttons.forEach(([t,f,wait=0])=>addButton(c,t,f,wait));if(allowEnd){let b=document.createElement('button');b.className='btn danger';b.textContent='食事を終了';b.onclick=()=>finish('manual');c.appendChild(b)}}
-function addButton(c,label,fn,wait){let b=document.createElement('button');b.className='btn';c.appendChild(b);if(wait<=0){b.textContent=label;b.onclick=fn;return}let left=wait;b.disabled=true;b.textContent=`${label}　あと${left}秒`;let it=setInterval(()=>{left--;if(left<=0){clearInterval(it);b.disabled=false;b.textContent=label;b.onclick=fn}else b.textContent=`${label}　あと${left}秒`},1000);lockTimer=it}
-function firstImpression(){choice('最初の印象だけ聞いとく。\n今日の一口目、どう？',['A：期待よりうまい','B：だいたい期待どおり','C：ちょっと期待外れ'],v=>{S.rating=v;foodPause('よし。採点会じゃないから、それで十分。\n\n少し食べよう。次はこっちから軽い話をする。',12)})}
-function choice(q,opts,cb){say('🦌 '+q,opts.map(x=>[x,()=>cb(x[0]),0]))}
-function foodPause(text,wait=15){say('🦌 '+text,[["次",nextBeat,wait]])}
-function nextBeat(){let m=mins();if(m>=15)return ending();if(m>=12&&S.fullChecks<2)return fullness();if(m>=7&&S.fullChecks<1)return fullness();if(m>=5&&!S.sensoryDone)return sensory();return quiz(S.quizIndex++%trivia.length)}
-function quiz(i){let t=trivia[i];say('🦌 '+t.intro,[["さて、問題",()=>choice(t.q,t.o,v=>answerTrivia(t,v)),7]])}
-function answerTrivia(t,v){say(`🦌 ${v===t.a?'正解。':'正解は '+t.a+'。'}\n\n${t.d}`,[['詳しく',()=>deepTrivia(t),8],['次',()=>foodPause(t.outro+'\n\nそのまま少し食べよう。',12),8]])}
-function deepTrivia(t){S.interests.push(t.q);say(`🦌 じゃあ、もう少し。\n\n${t.deep}\n\n${t.outro}`,[['次',()=>foodPause('この話はここまで。\n今は飯に戻ろう。',12),12]])}
-function sensory(){S.sensoryDone=true;say('🦌 ちょっとだけ食べ方をいじる。\n\n次の一口だけ、普段どおり食べてみて。\n食べ終わったら、どんな感じだった？',[['A：もう少し噛んでもよかった',()=>foodPause('了解。直す必要はない。気づいただけで十分。',12)],['B：ちょうどいい',()=>foodPause('なら今日は噛み方、もういじらなくていい。',12)],['C：十分噛んでる',()=>foodPause('よし。じゃあ余計な指導はしない（笑）。',12)]])}
-function fullness(){S.fullChecks++;say('🦌 ちょっと現在地だけ。\n\nいま、腹何分目くらい？\n深く考えなくていい。',[4,5,6,7,8,9,10].map(x=>[String(x),()=>{S.full.push(x);let msg=x>=8?'結構きたな。覚えとく。\nでも、まだ「終われ」とは言わない。':x<=5?'まだ余裕あるな。覚えとく。':'いいところまで来たな。覚えとく。';foodPause(msg+'\n\n満腹の話はいったん忘れて食べよう。',12)}]))}
-function ending(){let f=S.full.at(-1);let lead=f?`さっきは${f}分目だった。\n\n15分は過ぎた。今の状態は？`:'15分は過ぎた。\n\n今の状態は？';say('🦌 '+lead,[['A：まだ食べたいし、まだ残ってる',()=>finish('A')],['B：もう十分。でもまだ残ってる',()=>finish('B')],['C：ちょうど食べ終わった',()=>finish('C')],['まだ食べる',()=>foodPause('了解。急いで締める必要はない。\nもう少し付き合う。',15)]],false)}
-function finish(end){clearInterval(timer);clearInterval(lockTimer);let min=Math.max(1,Math.round(secs()/60)),f=S.full.at(-1)||'-';let log={date:new Date().toISOString(),place:S.place,menu:S.menu,size:S.size,minutes:min,fullness:f,end,rating:S.rating,interests:S.interests};let logs=JSON.parse(localStorage.getItem('hirushika:logs')||'[]');logs.push(log);localStorage.setItem('hirushika:logs',JSON.stringify(logs));let advice=end==='manual'?'今日はここで終了。時間もそのまま記録した。':end==='B'?'この量は少し多かったかも。次は「少なめ」を試す候補。':end==='C'?(Number(f)>=9?'食べ切ったけど、次は少し量を下げてもよさそう。':'この量はちょうどいい候補。'):'まだ食べたい余地があった。';hide();$('finish').classList.remove('hidden');$('summary').innerHTML=`<b>${min}分。</b><br>最後の満腹度は <b>${f}分目</b>。<br>${S.place} / ${S.menu} / ${S.size}<br><br>🦌 ${advice}<br><br><span class="muted">夜のことは知らん。俺、ひるしかだから。</span>`}
-window.addEventListener('beforeinstallprompt',e=>{e.preventDefault();deferredPrompt=e;$('installBtn').classList.remove('hidden')});$('installBtn').onclick=async()=>{if(deferredPrompt){deferredPrompt.prompt();await deferredPrompt.userChoice;deferredPrompt=null;$('installBtn').classList.add('hidden')}};if('serviceWorker'in navigator)window.addEventListener('load',()=>navigator.serviceWorker.register('./sw.js').catch(()=>{}));loadPlaces();
-</script></body></html>
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#4b3427">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<title>ひるしか Ver.0.5</title>
+<link rel="manifest" href="manifest.webmanifest">
+<style>
+:root{--bg:#f6efe4;--card:#fffaf2;--ink:#4b3427;--accent:#c78c52;--line:#e6d3bf;--soft:#f0e3d5;--ok:#e7f1e6}
+*{box-sizing:border-box}body{margin:0;font-family:system-ui,-apple-system,'Noto Sans JP','Segoe UI',sans-serif;background:var(--bg);color:var(--ink)}
+main{max-width:560px;margin:auto;min-height:100dvh;padding:16px 16px calc(24px + env(safe-area-inset-bottom))}.card{background:var(--card);border:1px solid var(--line);border-radius:26px;padding:20px;box-shadow:0 10px 30px #6b4b2d18;min-height:calc(100dvh - 32px);display:flex;flex-direction:column}.hidden{display:none}.hero{align-items:center;text-align:center;justify-content:center}.brand{width:170px;height:170px;object-fit:cover;border-radius:50%;margin-bottom:10px}.mini{width:76px;height:76px;object-fit:cover;border-radius:50%;display:block;margin:0 auto 8px}.title{font-size:38px;font-weight:900}.sub{opacity:.75;line-height:1.7;margin:4px 0 28px}.btns{display:grid;gap:10px;margin-top:auto}.btn{width:100%;min-height:54px;border-radius:17px;border:1px solid var(--line);background:#fff;color:var(--ink);font-size:16px;font-weight:750;padding:12px 14px}.btn:disabled{opacity:.45;background:#eee6dc}.primary{background:var(--ink);color:#fff;border-color:var(--ink)}.danger{font-size:14px;min-height:44px;opacity:.7}.ghost{background:transparent}.small{font-size:13px;min-height:40px}.chat{display:flex;flex-direction:column;gap:12px;margin:10px 0 14px;overflow:auto;max-height:55dvh;padding-right:2px}.msg{max-width:88%;padding:12px 14px;border-radius:18px;line-height:1.65;white-space:pre-line;font-size:17px}.ai{align-self:flex-start;background:var(--soft);border-bottom-left-radius:6px}.user{align-self:flex-end;background:#fff;border:1px solid var(--line);border-bottom-right-radius:6px}.typing{opacity:.65;font-style:italic}.composer{display:flex;gap:8px;margin-top:10px}.composer textarea{flex:1;min-height:50px;max-height:120px;resize:vertical;border:1px solid var(--line);border-radius:15px;padding:12px;font-size:16px;background:#fff}.send{width:78px}.quick{display:flex;gap:8px;flex-wrap:wrap;margin:4px 0 2px}.chip{border:1px solid var(--line);border-radius:999px;background:#fff;padding:9px 12px;font-size:14px;color:var(--ink)}.chip:disabled{opacity:.45}.meta{display:flex;justify-content:space-between;font-size:13px;opacity:.65}.progress{height:8px;background:#eadbcb;border-radius:99px;overflow:hidden;margin:10px 0}.progress div{height:100%;background:var(--accent)}input,select{width:100%;font-size:16px;padding:15px;border:1px solid var(--line);border-radius:14px;background:#fff;margin:6px 0 14px}.memory{background:var(--soft);border-radius:15px;padding:12px;margin-bottom:14px;font-size:14px;line-height:1.55}.muted{opacity:.65;font-size:14px;line-height:1.6}.status{border-radius:14px;padding:10px 12px;font-size:13px;margin:8px 0}.status.ok{background:var(--ok)}.status.ng{background:#f7e2df}.row{display:flex;gap:8px}.row>*{flex:1}.summary{font-size:17px;line-height:1.9;margin:14px 0}.section-title{font-size:18px;font-weight:800;margin:4px 0 8px}
+@media(min-width:600px){main{padding:24px}.card{min-height:700px}}
+</style>
+</head>
+<body><main>
+<section id="home" class="card hero">
+  <img class="brand" src="assets/hirushika-hero.png" alt="ひるしか">
+  <div class="title">ひるしか</div>
+  <div class="sub">昼しか、見ない。<br>AIと話して、気づけば15分。</div>
+  <div class="btns" style="width:100%">
+    <button class="btn primary" onclick="showStart()">ランチする</button>
+    <button class="btn" onclick="startConsult()">何食べる？</button>
+    <button class="btn small ghost" onclick="showSettings()">AI接続設定</button>
+    <button id="installBtn" class="btn hidden">ホーム画面に追加</button>
+  </div>
+  <p class="muted">Ver.0.5｜AIひるしか試作版</p>
+</section>
+
+<section id="settings" class="card hidden">
+  <img class="mini" src="assets/hirushika-hero.png" alt="ひるしか">
+  <div class="section-title">AI接続設定</div>
+  <p class="muted">Cloudflare Workerを公開したあと、そのURLをここに貼ります。APIキーはスマホには保存しません。</p>
+  <label>Worker URL</label>
+  <input id="apiUrl" placeholder="https://hirushika-ai.xxxxx.workers.dev">
+  <div id="apiStatus" class="status hidden"></div>
+  <div class="btns">
+    <button class="btn primary" onclick="saveApiUrl()">保存して接続確認</button>
+    <button class="btn" onclick="goHome()">戻る</button>
+  </div>
+</section>
+
+<section id="consult" class="card hidden">
+  <img class="mini" src="assets/hirushika-hero.png" alt="ひるしか">
+  <div class="meta"><span>何食べる？</span><span>自由会話</span></div>
+  <div id="consultChat" class="chat"></div>
+  <div id="consultQuick" class="quick"></div>
+  <div class="composer">
+    <textarea id="consultInput" placeholder="例：昨日飲みすぎた。今日は温かいものがいい"></textarea>
+    <button class="btn primary send" onclick="sendConsult()">送る</button>
+  </div>
+  <div class="btns" style="margin-top:10px">
+    <button id="useMenuBtn" class="btn hidden" onclick="useSuggestedMenu()">これでランチする</button>
+    <button class="btn danger" onclick="goHome()">ホームへ戻る</button>
+  </div>
+</section>
+
+<section id="start" class="card hidden">
+  <img class="mini" src="assets/hirushika-hero.png" alt="ひるしか">
+  <h2>今日のランチ</h2>
+  <label>店・場所</label><input id="place" list="places" placeholder="例：だしや / 自宅 / 会社"><datalist id="places"></datalist>
+  <div id="memory" class="memory hidden"></div>
+  <label>メニュー</label><input id="menu" placeholder="例：回鍋肉定食">
+  <label>量</label><select id="size"><option>普通</option><option>少なめ</option><option>大盛り</option><option>不明</option></select>
+  <div class="btns"><button class="btn primary" onclick="startLunch()">ひるしかと食べる</button><button class="btn" onclick="goHome()">戻る</button></div>
+</section>
+
+<section id="lunch" class="card hidden">
+  <img class="mini" src="assets/hirushika-hero.png" alt="ひるしか">
+  <div class="meta"><span id="elapsed">0:00</span><span id="phaseLabel">まずは食べよう</span></div>
+  <div class="progress"><div id="bar" style="width:0"></div></div>
+  <div id="lunchChat" class="chat"></div>
+  <div id="lunchQuick" class="quick"></div>
+  <div class="composer">
+    <textarea id="lunchInput" placeholder="自由に返してOK。『詳しく』『別の話』でも。"></textarea>
+    <button id="lunchSend" class="btn primary send" onclick="sendLunch()">送る</button>
+  </div>
+  <div class="btns" style="margin-top:10px">
+    <button id="continueBtn" class="btn" onclick="continueLunch()">続ける</button>
+    <button id="finishBtn" class="btn danger" onclick="finishLunchManual()">食事を終了</button>
+  </div>
+</section>
+
+<section id="finish" class="card hidden">
+  <img class="mini" src="assets/hirushika-hero.png" alt="ひるしか">
+  <h2>ごちそうさま。</h2>
+  <div id="summary" class="summary"></div>
+  <div class="btns"><button class="btn primary" onclick="goHome()">ホームへ</button></div>
+</section>
+</main>
+<script>
+const $=id=>document.getElementById(id);
+let startedAt=0,timer=null,deferredPrompt=null,continueLock=null;
+let lunchState=null,consultState=null;
+const HKEY='hirushika:history:v05', MKEY='hirushika:memory:v05', APIKEY='hirushika:apiUrl';
+
+function hideAll(){['home','settings','consult','start','lunch','finish'].forEach(x=>$(x).classList.add('hidden'))}
+function goHome(){clearInterval(timer);clearInterval(continueLock);hideAll();$('home').classList.remove('hidden');loadPlaces()}
+function showSettings(){hideAll();$('settings').classList.remove('hidden');$('apiUrl').value=localStorage.getItem(APIKEY)||''}
+async function saveApiUrl(){let u=$('apiUrl').value.trim().replace(/\/$/,'');localStorage.setItem(APIKEY,u);let s=$('apiStatus');s.className='status';s.classList.remove('hidden');s.textContent='接続確認中…';try{let r=await fetch(u+'/health');if(!r.ok)throw new Error();s.classList.add('ok');s.textContent='接続OK。AIひるしかを使えます。'}catch(e){s.classList.add('ng');s.textContent='接続できません。Worker URLを確認してください。'}}
+function apiUrl(){return (localStorage.getItem(APIKEY)||'').replace(/\/$/,'')}
+function requireApi(){if(!apiUrl()){showSettings();let s=$('apiStatus');s.className='status ng';s.classList.remove('hidden');s.textContent='先にAI接続設定が必要です。';return false}return true}
+
+function appendMsg(elId,who,text,typing=false){let box=$(elId),d=document.createElement('div');d.className='msg '+(who==='ai'?'ai':'user')+(typing?' typing':'');d.textContent=(who==='ai'?'🦌 ':'')+text;box.appendChild(d);box.scrollTop=box.scrollHeight;return d}
+function renderQuick(elId,items,handler,wait=0){let el=$(elId);el.innerHTML='';(items||[]).slice(0,4).forEach((t,i)=>{let b=document.createElement('button');b.className='chip';b.textContent=t;b.onclick=()=>handler(t);el.appendChild(b);if(wait>0){b.disabled=true;setTimeout(()=>b.disabled=false,wait*1000)}})}
+function loadMemory(){return JSON.parse(localStorage.getItem(MKEY)||'{}')}
+function saveMemoryUpdates(arr){if(!Array.isArray(arr)||!arr.length)return;let m=loadMemory();arr.forEach(x=>{if(!x||!x.key)return;m[x.key]=x.value});localStorage.setItem(MKEY,JSON.stringify(m))}
+function logs(){return JSON.parse(localStorage.getItem('hirushika:logs')||'[]')}
+function recentMealSummary(){return logs().slice(-5).map(x=>({place:x.place,menu:x.menu,size:x.size,minutes:x.minutes,fullness:x.fullness,end:x.end}));}
+
+async function callAI(mode,history,context={}){
+  let u=apiUrl(); if(!u)throw new Error('API未設定');
+  let r=await fetch(u+'/chat',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({mode,history:history.slice(-16),context:{...context,memory:loadMemory(),recent_meals:recentMealSummary()}})});
+  let j=await r.json().catch(()=>({})); if(!r.ok)throw new Error(j.error||'AI接続エラー'); return j;
+}
+
+function startConsult(){if(!requireApi())return;consultState={history:[],selectedMenu:null};hideAll();$('consult').classList.remove('hidden');$('consultChat').innerHTML='';$('consultQuick').innerHTML='';$('useMenuBtn').classList.add('hidden');appendMsg('consultChat','ai','昼だな。今日は何が食いたい？\n決まってなくてもいい。今の気分をそのまま言って。');consultState.history.push({role:'assistant',content:'昼だな。今日は何が食いたい？ 決まってなくてもいい。今の気分をそのまま言って。'});renderQuick('consultQuick',['腹ペコ','軽めがいい','昨日飲んだ','何も決まってない'],t=>sendConsultText(t));}
+async function sendConsult(){let t=$('consultInput').value.trim();if(!t)return;$('consultInput').value='';await sendConsultText(t)}
+async function sendConsultText(t){appendMsg('consultChat','user',t);consultState.history.push({role:'user',content:t});let ph=appendMsg('consultChat','ai','考え中…',true);try{let j=await callAI('consult',consultState.history,{});ph.remove();appendMsg('consultChat','ai',j.reply||'もう少し教えて。');consultState.history.push({role:'assistant',content:j.reply||''});saveMemoryUpdates(j.memory_updates);renderQuick('consultQuick',j.quick_replies,t=>sendConsultText(t));consultState.selectedMenu=j.selected_menu||null;if(consultState.selectedMenu){$('useMenuBtn').classList.remove('hidden');$('useMenuBtn').textContent=`「${consultState.selectedMenu}」でランチする`}else $('useMenuBtn').classList.add('hidden')}catch(e){ph.remove();appendMsg('consultChat','ai','うまくつながらなかった。もう一回だけ頼む。');}}
+function useSuggestedMenu(){hideAll();$('start').classList.remove('hidden');loadPlaces();$('menu').value=consultState?.selectedMenu||'';$('place').focus()}
+
+function showStart(){hideAll();$('start').classList.remove('hidden');loadPlaces();$('place').oninput=showMemory}
+function loadPlaces(){let d=$('places');if(!d)return;d.innerHTML=[...new Set(logs().map(x=>x.place).filter(Boolean))].map(p=>`<option value="${p.replaceAll('"','&quot;')}">`).join('')}
+function showMemory(){let p=$('place').value.trim(),ls=logs().filter(x=>x.place===p),el=$('memory');if(!ls.length){el.classList.add('hidden');return}let x=ls.at(-1);el.classList.remove('hidden');el.textContent=`🦌 前回：${x.menu} / ${x.size} / ${x.fullness}分目 / ${x.minutes}分。${x.end==='B'?'少なめ候補だった。':''}`}
+
+function secs(){return Math.floor((Date.now()-startedAt)/1000)}
+function phase(){let s=secs();if(s<240)return 'opening';if(s<480)return 'middle1';if(s<720)return 'middle2';if(s<900)return 'late';return 'after15'}
+function phaseJa(){return {opening:'まずは食べよう',middle1:'ゆっくりいこう',middle2:'いい昼だ',late:'そろそろ15分',after15:'15分経過'}[phase()]}
+function tick(){let s=secs(),m=Math.floor(s/60),r=s%60;$('elapsed').textContent=`${m}:${String(r).padStart(2,'0')}`;$('bar').style.width=Math.min(100,(s/900)*100)+'%';$('phaseLabel').textContent=phaseJa();if(s>=900){$('finishBtn').classList.remove('danger');$('finishBtn').classList.add('primary')}}
+
+async function startLunch(){if(!requireApi())return;lunchState={place:$('place').value.trim()||'未登録',menu:$('menu').value.trim()||'未登録',size:$('size').value,history:[],fullness:[],interestTopics:[],full1:false,full2:false};startedAt=Date.now();hideAll();$('lunch').classList.remove('hidden');$('lunchChat').innerHTML='';$('lunchQuick').innerHTML='';$('finishBtn').className='btn danger';tick();timer=setInterval(tick,1000);await aiLunchTurn('ランチ開始。自然に一言話しかけて。最初から質問攻めにしないで。',true)}
+function lunchContext(){let s=secs();let due=(s>=420&&!lunchState.full1)?'first':(s>=720&&!lunchState.full2)?'second':'none';return {elapsed_seconds:s,phase:phase(),place:lunchState.place,menu:lunchState.menu,size:lunchState.size,fullness_due:due,known_fullness:lunchState.fullness}}
+async function aiLunchTurn(userText,isSystem=false){if(!isSystem){appendMsg('lunchChat','user',userText);lunchState.history.push({role:'user',content:userText})}let ph=appendMsg('lunchChat','ai','ちょっと考えてる…',true);disableLunch(true);try{let h=[...lunchState.history];if(isSystem)h.push({role:'user',content:userText});let j=await callAI('lunch',h,lunchContext());ph.remove();appendMsg('lunchChat','ai',j.reply||'まあ、少し食べよう。');lunchState.history.push({role:'assistant',content:j.reply||''});saveMemoryUpdates(j.memory_updates);if(j.fullness_value){let n=Number(j.fullness_value);if(n>=1&&n<=10){lunchState.fullness.push(n);if(secs()>=720)lunchState.full2=true;else lunchState.full1=true}}renderQuick('lunchQuick',j.quick_replies,t=>aiLunchTurn(t),8);setContinueLock(10);disableLunch(false)}catch(e){ph.remove();appendMsg('lunchChat','ai','通信が切れた。飯は逃げない。少し食べて、もう一回。');setContinueLock(6);disableLunch(false)}}
+function disableLunch(on){$('lunchSend').disabled=on;$('lunchInput').disabled=on}
+async function sendLunch(){let t=$('lunchInput').value.trim();if(!t)return;$('lunchInput').value='';await aiLunchTurn(t)}
+function continueLunch(){aiLunchTurn('話を自然に続けて。直前の話を深めるか、少し食べる間を作るか、別の面白い話題に移って。唐突なクイズは禁止。')}
+function setContinueLock(n){clearInterval(continueLock);let b=$('continueBtn'),left=n;b.disabled=true;b.textContent=`続ける　あと${left}秒`;continueLock=setInterval(()=>{left--;if(left<=0){clearInterval(continueLock);b.disabled=false;b.textContent='続ける'}else b.textContent=`続ける　あと${left}秒`},1000)}
+function finishLunchManual(){if(secs()<900&&!confirm('まだ15分前だけど、今日はここで終える？'))return;finishLunch()}
+function finishLunch(){clearInterval(timer);clearInterval(continueLock);let min=Math.max(1,Math.round(secs()/60)),f=lunchState.fullness.at(-1)||'-';let end=secs()>=900?'C':'manual';let rec={date:new Date().toISOString(),place:lunchState.place,menu:lunchState.menu,size:lunchState.size,minutes:min,fullness:f,end};let ls=logs();ls.push(rec);localStorage.setItem('hirushika:logs',JSON.stringify(ls));hideAll();$('finish').classList.remove('hidden');$('summary').innerHTML=`<b>${min}分。</b><br>${lunchState.place} / ${lunchState.menu} / ${lunchState.size}<br>最後に記録できた満腹度：<b>${f}分目</b><br><br>🦌 ${min>=15?'気づけば15分。今日はそれで十分。':'今日は短め。そういう昼もある。'}<br><br><span class="muted">夜のことは知らん。俺、ひるしかだから。</span>`}
+
+window.addEventListener('beforeinstallprompt',e=>{e.preventDefault();deferredPrompt=e;$('installBtn').classList.remove('hidden')});
+$('installBtn').onclick=async()=>{if(deferredPrompt){deferredPrompt.prompt();await deferredPrompt.userChoice;deferredPrompt=null;$('installBtn').classList.add('hidden')}};
+if('serviceWorker'in navigator)window.addEventListener('load',()=>navigator.serviceWorker.register('./sw.js').catch(()=>{}));
+loadPlaces();
+</script>
+</body></html>
