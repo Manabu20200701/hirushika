@@ -47,7 +47,7 @@ main{max-width:560px;margin:auto;min-height:100dvh;padding:16px 16px calc(24px +
   <div id="consultChat" class="chat"></div>
   <div id="consultQuick" class="quick"></div>
   <div class="composer">
-    <textarea id="consultInput" placeholder="例：昨日飲みすぎた。今日は温かいものがいい"></textarea>
+    <textarea id="consultInput" placeholder="ひるしかに話す"></textarea>
     <button class="btn primary send" onclick="sendConsult()">送る</button>
   </div>
   <div class="btns" style="margin-top:10px">
@@ -111,13 +111,28 @@ function recentMealSummary(){return logs().slice(-5).map(x=>({place:x.place,menu
 
 async function callAI(mode,history,context={}){
   let u=apiUrl(); if(!u)throw new Error('API未設定');
-  let r=await fetch(u+'/chat',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({mode,history:history.slice(-16),context:{...context,memory:loadMemory(),recent_meals:recentMealSummary()}})});
-  let j=await r.json().catch(()=>({})); if(!r.ok)throw new Error(j.error||'AI接続エラー'); return j;
+  const apiMode = mode==='consult' ? 'choose' : mode;
+  const payload={
+    mode:apiMode,
+    messages:history.slice(-24),
+    elapsedMinutes:Number(context.elapsed_seconds||0)/60,
+    restaurant:context.place||'',
+    menu:context.menu||'',
+    portion:context.size||'',
+    memory:{
+      profile:loadMemory(),
+      recent_meals:recentMealSummary(),
+      fullness_due:context.fullness_due||'none',
+      known_fullness:context.known_fullness||[]
+    }
+  };
+  let r=await fetch(u+'/chat',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)});
+  let j=await r.json().catch(()=>({})); if(!r.ok||j.ok===false)throw new Error(j.error||'AI接続エラー'); return j;
 }
 
-function startConsult(){if(!requireApi())return;consultState={history:[],selectedMenu:null};hideAll();$('consult').classList.remove('hidden');$('consultChat').innerHTML='';$('consultQuick').innerHTML='';$('useMenuBtn').classList.add('hidden');appendMsg('consultChat','ai','昼だな。今日は何が食いたい？\n決まってなくてもいい。今の気分をそのまま言って。');consultState.history.push({role:'assistant',content:'昼だな。今日は何が食いたい？ 決まってなくてもいい。今の気分をそのまま言って。'});renderQuick('consultQuick',['腹ペコ','軽めがいい','昨日飲んだ','何も決まってない'],t=>sendConsultText(t));}
+function startConsult(){if(!requireApi())return;consultState={history:[],selectedMenu:null};hideAll();$('consult').classList.remove('hidden');$('consultChat').innerHTML='';$('consultQuick').innerHTML='';$('useMenuBtn').classList.add('hidden');appendMsg('consultChat','ai','昼だな。今日は何が食いたい？\n決まってなくてもいい。今の気分をそのまま言って。');consultState.history.push({role:'assistant',content:'昼だな。今日は何が食いたい？ 決まってなくてもいい。今の気分をそのまま言って。'});$('consultQuick').innerHTML='';}
 async function sendConsult(){let t=$('consultInput').value.trim();if(!t)return;$('consultInput').value='';await sendConsultText(t)}
-async function sendConsultText(t){appendMsg('consultChat','user',t);consultState.history.push({role:'user',content:t});let ph=appendMsg('consultChat','ai','考え中…',true);try{let j=await callAI('consult',consultState.history,{});ph.remove();appendMsg('consultChat','ai',j.reply||'もう少し教えて。');consultState.history.push({role:'assistant',content:j.reply||''});saveMemoryUpdates(j.memory_updates);renderQuick('consultQuick',j.quick_replies,t=>sendConsultText(t));consultState.selectedMenu=j.selected_menu||null;if(consultState.selectedMenu){$('useMenuBtn').classList.remove('hidden');$('useMenuBtn').textContent=`「${consultState.selectedMenu}」でランチする`}else $('useMenuBtn').classList.add('hidden')}catch(e){ph.remove();appendMsg('consultChat','ai','うまくつながらなかった。もう一回だけ頼む。');}}
+async function sendConsultText(t){appendMsg('consultChat','user',t);consultState.history.push({role:'user',content:t});let ph=appendMsg('consultChat','ai','考え中…',true);try{let j=await callAI('consult',consultState.history,{});ph.remove();appendMsg('consultChat','ai',j.reply||'もう少し教えて。');consultState.history.push({role:'assistant',content:j.reply||''});saveMemoryUpdates(j.memory_updates);renderQuick('consultQuick',j.quick_replies||[],t=>sendConsultText(t));consultState.selectedMenu=j.selected_menu||null;if(consultState.selectedMenu){$('useMenuBtn').classList.remove('hidden');$('useMenuBtn').textContent=`「${consultState.selectedMenu}」でランチする`}else $('useMenuBtn').classList.add('hidden')}catch(e){ph.remove();appendMsg('consultChat','ai','うまくつながらなかった。もう一回だけ頼む。');}}
 function useSuggestedMenu(){hideAll();$('start').classList.remove('hidden');loadPlaces();$('menu').value=consultState?.selectedMenu||'';$('place').focus()}
 
 function showStart(){hideAll();$('start').classList.remove('hidden');loadPlaces();$('place').oninput=showMemory}
@@ -131,7 +146,7 @@ function tick(){let s=secs(),m=Math.floor(s/60),r=s%60;$('elapsed').textContent=
 
 async function startLunch(){if(!requireApi())return;lunchState={place:$('place').value.trim()||'未登録',menu:$('menu').value.trim()||'未登録',size:$('size').value,history:[],fullness:[],interestTopics:[],full1:false,full2:false};startedAt=Date.now();hideAll();$('lunch').classList.remove('hidden');$('lunchChat').innerHTML='';$('lunchQuick').innerHTML='';$('finishBtn').className='btn danger';tick();timer=setInterval(tick,1000);await aiLunchTurn('ランチ開始。自然に一言話しかけて。最初から質問攻めにしないで。',true)}
 function lunchContext(){let s=secs();let due=(s>=420&&!lunchState.full1)?'first':(s>=720&&!lunchState.full2)?'second':'none';return {elapsed_seconds:s,phase:phase(),place:lunchState.place,menu:lunchState.menu,size:lunchState.size,fullness_due:due,known_fullness:lunchState.fullness}}
-async function aiLunchTurn(userText,isSystem=false){if(!isSystem){appendMsg('lunchChat','user',userText);lunchState.history.push({role:'user',content:userText})}let ph=appendMsg('lunchChat','ai','ちょっと考えてる…',true);disableLunch(true);try{let h=[...lunchState.history];if(isSystem)h.push({role:'user',content:userText});let j=await callAI('lunch',h,lunchContext());ph.remove();appendMsg('lunchChat','ai',j.reply||'まあ、少し食べよう。');lunchState.history.push({role:'assistant',content:j.reply||''});saveMemoryUpdates(j.memory_updates);if(j.fullness_value){let n=Number(j.fullness_value);if(n>=1&&n<=10){lunchState.fullness.push(n);if(secs()>=720)lunchState.full2=true;else lunchState.full1=true}}renderQuick('lunchQuick',j.quick_replies,t=>aiLunchTurn(t),8);setContinueLock(10);disableLunch(false)}catch(e){ph.remove();appendMsg('lunchChat','ai','通信が切れた。飯は逃げない。少し食べて、もう一回。');setContinueLock(6);disableLunch(false)}}
+async function aiLunchTurn(userText,isSystem=false){if(!isSystem){appendMsg('lunchChat','user',userText);lunchState.history.push({role:'user',content:userText})}let ph=appendMsg('lunchChat','ai','ちょっと考えてる…',true);disableLunch(true);try{let h=[...lunchState.history];if(isSystem)h.push({role:'user',content:userText});let j=await callAI('lunch',h,lunchContext());ph.remove();appendMsg('lunchChat','ai',j.reply||'まあ、少し食べよう。');lunchState.history.push({role:'assistant',content:j.reply||''});saveMemoryUpdates(j.memory_updates);if(j.fullness_value){let n=Number(j.fullness_value);if(n>=1&&n<=10){lunchState.fullness.push(n);if(secs()>=720)lunchState.full2=true;else lunchState.full1=true}}renderQuick('lunchQuick',j.quick_replies||[],t=>aiLunchTurn(t),8);setContinueLock(10);disableLunch(false)}catch(e){ph.remove();appendMsg('lunchChat','ai','通信が切れた。飯は逃げない。少し食べて、もう一回。');setContinueLock(6);disableLunch(false)}}
 function disableLunch(on){$('lunchSend').disabled=on;$('lunchInput').disabled=on}
 async function sendLunch(){let t=$('lunchInput').value.trim();if(!t)return;$('lunchInput').value='';await aiLunchTurn(t)}
 function continueLunch(){aiLunchTurn('話を自然に続けて。直前の話を深めるか、少し食べる間を作るか、別の面白い話題に移って。唐突なクイズは禁止。')}
