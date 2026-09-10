@@ -1,7 +1,7 @@
 {
-  "name": "ひるしか Ver.0.3",
+  "name": "ひるしか Ver.0.4",
   "short_name": "ひるしか",
-  "description": "昼しか、見ない。食べる時間を、ちょっと楽しく。",
+  "description": "昼しか、見ない。食べる前も、食べてる間も。",
   "start_url": "./index.html",
   "display": "standalone",
   "background_color": "#f6efe4",
