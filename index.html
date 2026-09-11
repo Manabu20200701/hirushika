@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#4b3427">
 <meta name="apple-mobile-web-app-capable" content="yes">
-<title>ひるしか Ver.0.5</title>
+<title>ひるしか Ver.0.6</title>
 <link rel="manifest" href="manifest.webmanifest">
 <style>
 :root{--bg:#f6efe4;--card:#fffaf2;--ink:#4b3427;--accent:#c78c52;--line:#e6d3bf;--soft:#f0e3d5;--ok:#e7f1e6}
@@ -18,14 +18,14 @@ main{max-width:560px;margin:auto;min-height:100dvh;padding:16px 16px calc(24px +
 <section id="home" class="card hero">
   <img class="brand" src="assets/hirushika-hero.png" alt="ひるしか">
   <div class="title">ひるしか</div>
-  <div class="sub">昼しか、見ない。<br>AIと話して、気づけば15分。</div>
+  <div class="sub">昼しか、見ない。<br>早食いしない昼を、ひるしかと。</div>
   <div class="btns" style="width:100%">
     <button class="btn primary" onclick="showStart()">ランチする</button>
     <button class="btn" onclick="startConsult()">何食べる？</button>
     <button class="btn small ghost" onclick="showSettings()">AI接続設定</button>
     <button id="installBtn" class="btn hidden">ホーム画面に追加</button>
   </div>
-  <p class="muted">Ver.0.5｜AIひるしか試作版</p>
+  <p class="muted">Ver.0.6｜15分ランチ再設計版</p>
 </section>
 
 <section id="settings" class="card hidden">
@@ -72,12 +72,10 @@ main{max-width:560px;margin:auto;min-height:100dvh;padding:16px 16px calc(24px +
   <div class="progress"><div id="bar" style="width:0"></div></div>
   <div id="lunchChat" class="chat"></div>
   <div id="lunchQuick" class="quick"></div>
-  <div class="composer">
-    <textarea id="lunchInput" placeholder="自由に返してOK。『詳しく』『別の話』でも。"></textarea>
-    <button id="lunchSend" class="btn primary send" onclick="sendLunch()">送る</button>
-  </div>
+  <div id="lunchNote" class="muted hidden" style="margin-top:6px"></div>
   <div class="btns" style="margin-top:10px">
-    <button id="continueBtn" class="btn" onclick="continueLunch()">続ける</button>
+    <button id="continueBtn" class="btn primary" onclick="continueLunch()">続ける</button>
+    <button id="deepenBtn" class="btn hidden" onclick="deepenLunch()">詳しく</button>
     <button id="finishBtn" class="btn danger" onclick="finishLunchManual()">食事を終了</button>
   </div>
 </section>
@@ -85,7 +83,9 @@ main{max-width:560px;margin:auto;min-height:100dvh;padding:16px 16px calc(24px +
 <section id="finish" class="card hidden">
   <img class="mini" src="assets/hirushika-hero.png" alt="ひるしか">
   <h2>ごちそうさま。</h2>
+  <div id="finishLine" class="msg ai" style="max-width:100%;margin:6px 0 10px"></div>
   <div id="summary" class="summary"></div>
+  <div id="finishLog" class="memory"></div>
   <div class="btns"><button class="btn primary" onclick="goHome()">ホームへ</button></div>
 </section>
 </main>
@@ -139,20 +139,133 @@ function showStart(){hideAll();$('start').classList.remove('hidden');loadPlaces(
 function loadPlaces(){let d=$('places');if(!d)return;d.innerHTML=[...new Set(logs().map(x=>x.place).filter(Boolean))].map(p=>`<option value="${p.replaceAll('"','&quot;')}">`).join('')}
 function showMemory(){let p=$('place').value.trim(),ls=logs().filter(x=>x.place===p),el=$('memory');if(!ls.length){el.classList.add('hidden');return}let x=ls.at(-1);el.classList.remove('hidden');el.textContent=`🦌 前回：${x.menu} / ${x.size} / ${x.fullness}分目 / ${x.minutes}分。${x.end==='B'?'少なめ候補だった。':''}`}
 
-function secs(){return Math.floor((Date.now()-startedAt)/1000)}
-function phase(){let s=secs();if(s<240)return 'opening';if(s<480)return 'middle1';if(s<720)return 'middle2';if(s<900)return 'late';return 'after15'}
-function phaseJa(){return {opening:'まずは食べよう',middle1:'ゆっくりいこう',middle2:'いい昼だ',late:'そろそろ15分',after15:'15分経過'}[phase()]}
+function secs(){return Math.max(0,Math.floor((Date.now()-startedAt)/1000))}
+function phase(){let s=secs();if(s<180)return 'opening';if(s<420)return 'early';if(s<720)return 'middle';if(s<900)return 'late';return 'after15'}
+function phaseJa(){return {opening:'まずは食べよう',early:'少しゆっくり',middle:'いい昼だ',late:'あと少し',after15:'15分経過'}[phase()]}
 function tick(){let s=secs(),m=Math.floor(s/60),r=s%60;$('elapsed').textContent=`${m}:${String(r).padStart(2,'0')}`;$('bar').style.width=Math.min(100,(s/900)*100)+'%';$('phaseLabel').textContent=phaseJa();if(s>=900){$('finishBtn').classList.remove('danger');$('finishBtn').classList.add('primary')}}
 
-async function startLunch(){if(!requireApi())return;lunchState={place:$('place').value.trim()||'未登録',menu:$('menu').value.trim()||'未登録',size:$('size').value,history:[],fullness:[],interestTopics:[],full1:false,full2:false};startedAt=Date.now();hideAll();$('lunch').classList.remove('hidden');$('lunchChat').innerHTML='';$('lunchQuick').innerHTML='';$('finishBtn').className='btn danger';tick();timer=setInterval(tick,1000);await aiLunchTurn('ランチ開始。自然に一言話しかけて。最初から質問攻めにしないで。',true)}
-function lunchContext(){let s=secs();let due=(s>=420&&!lunchState.full1)?'first':(s>=720&&!lunchState.full2)?'second':'none';return {elapsed_seconds:s,phase:phase(),place:lunchState.place,menu:lunchState.menu,size:lunchState.size,fullness_due:due,known_fullness:lunchState.fullness}}
-async function aiLunchTurn(userText,isSystem=false){if(!isSystem){appendMsg('lunchChat','user',userText);lunchState.history.push({role:'user',content:userText})}let ph=appendMsg('lunchChat','ai','ちょっと考えてる…',true);disableLunch(true);try{let h=[...lunchState.history];if(isSystem)h.push({role:'user',content:userText});let j=await callAI('lunch',h,lunchContext());ph.remove();appendMsg('lunchChat','ai',j.reply||'まあ、少し食べよう。');lunchState.history.push({role:'assistant',content:j.reply||''});saveMemoryUpdates(j.memory_updates);if(j.fullness_value){let n=Number(j.fullness_value);if(n>=1&&n<=10){lunchState.fullness.push(n);if(secs()>=720)lunchState.full2=true;else lunchState.full1=true}}renderQuick('lunchQuick',j.quick_replies||[],t=>aiLunchTurn(t),8);setContinueLock(10);disableLunch(false)}catch(e){ph.remove();appendMsg('lunchChat','ai','通信が切れた。飯は逃げない。少し食べて、もう一回。');setContinueLock(6);disableLunch(false)}}
-function disableLunch(on){$('lunchSend').disabled=on;$('lunchInput').disabled=on}
-async function sendLunch(){let t=$('lunchInput').value.trim();if(!t)return;$('lunchInput').value='';await aiLunchTurn(t)}
-function continueLunch(){aiLunchTurn('話を自然に続けて。直前の話を深めるか、少し食べる間を作るか、別の面白い話題に移って。唐突なクイズは禁止。')}
+function lastItem(arr){return arr&&arr.length?arr[arr.length-1]:null}
+function lunchContext(){return {elapsed_seconds:secs(),place:lunchState.place,menu:lunchState.menu,size:lunchState.size,known_fullness:lunchState.fullness}}
+
+async function startLunch(){
+  if(!requireApi())return;
+  lunchState={place:$('place').value.trim()||'未登録',menu:$('menu').value.trim()||'未登録',size:$('size').value,history:[],fullness:[],turn:0,chewDone:false,full1:false,full2:false,currentTopic:'',deepCount:0,lastKind:'',quiz:null};
+  startedAt=Date.now();hideAll();$('lunch').classList.remove('hidden');$('lunchChat').innerHTML='';$('lunchQuick').innerHTML='';$('lunchNote').classList.add('hidden');$('deepenBtn').classList.add('hidden');$('finishBtn').className='btn danger';tick();timer=setInterval(tick,1000);
+  await runLunchTask('opening');
+}
+
+function chooseLunchTask(){
+  const s=secs();
+  if(s>=900)return 'closing';
+  if(s>=720 && !lunchState.full2)return 'fullness';
+  if(s>=420 && !lunchState.full1)return 'fullness';
+  if(s>=180 && !lunchState.chewDone)return 'chew';
+  lunchState.turn++;
+  // 2〜3ターンに1回はクイズ。連続クイズは避ける。
+  if(lunchState.lastKind!=='quiz' && (lunchState.turn%3===1 || (s>480 && lunchState.turn%2===0))) return 'quiz';
+  if(lunchState.turn%4===0)return 'pause';
+  return 'continue';
+}
+
+async function callLunchTask(task,extra={}){
+  let u=apiUrl(); if(!u)throw new Error('API未設定');
+  const payload={
+    mode:'lunch',task,
+    messages:lunchState.history.slice(-16),
+    elapsedMinutes:secs()/60,
+    restaurant:lunchState.place,menu:lunchState.menu,portion:lunchState.size,
+    topic:lunchState.currentTopic||'',deepCount:lunchState.deepCount||0,
+    extra,
+    memory:{profile:loadMemory(),recent_meals:recentMealSummary(),known_fullness:lunchState.fullness}
+  };
+  const r=await fetch(u+'/chat',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)});
+  const j=await r.json().catch(()=>({}));if(!r.ok||j.ok===false)throw new Error(j.error||'AI接続エラー');return j;
+}
+
+function showLunchSpeech(text){appendMsg('lunchChat','ai',text||'まあ、ひと口いこう。')}
+function setLunchNote(text=''){const e=$('lunchNote');if(!text){e.classList.add('hidden');e.textContent='';return}e.textContent=text;e.classList.remove('hidden')}
+function setDeepen(show){$('deepenBtn').classList.toggle('hidden',!show)}
+
+async function runLunchTask(task,extra={}){
+  disableLunchActions(true);setLunchNote('');setDeepen(false);$('lunchQuick').innerHTML='';
+  let ph=appendMsg('lunchChat','ai','…',true);
+  try{
+    const j=await callLunchTask(task,extra);ph.remove();
+    const speech=(j.speech||j.reply||'').trim();showLunchSpeech(speech);
+    if(speech)lunchState.history.push({role:'assistant',content:speech});
+    lunchState.lastKind=j.kind||task;
+    if(j.topic)lunchState.currentTopic=j.topic;
+    if(j.can_deepen)setDeepen(true);
+
+    if((j.kind||task)==='quiz'){
+      lunchState.quiz={correct:j.correct||'',explanation:j.explanation||'',topic:j.topic||lunchState.currentTopic,choices:j.choices||[]};
+      renderQuick('lunchQuick',(j.choices||[]).map(c=>typeof c==='string'?c:`${c.id}. ${c.label}`),answerQuiz,0);
+      setLunchNote('答えを選んだら、ひるしかが続きを話す。');
+    } else if((j.kind||task)==='fullness'){
+      renderQuick('lunchQuick',['4','5','6','7','8','9','10'],answerFullness,0);
+      setLunchNote('いまの感覚で。正解はない。');
+    } else if((j.kind||task)==='chew'){
+      renderQuick('lunchQuick',['10回くらい','15回くらい','20回くらい','25回以上'],answerChew,0);
+      setLunchNote('次の一口だけ数えればOK。終わったら忘れよう。');
+    } else if((j.kind||task)==='closing'){
+      setLunchNote('15分。ここからは、食べ終わったら終了でOK。');
+    }
+    setContinueLock(task==='pause'?15:10);
+  }catch(e){ph.remove();showLunchSpeech('通信がちょっと詰まった。まあ、その間にひと口いこう。');setContinueLock(8)}
+  finally{disableLunchActions(false)}
+}
+
+function disableLunchActions(on){$('continueBtn').disabled=on;$('finishBtn').disabled=on;if(!$('deepenBtn').classList.contains('hidden'))$('deepenBtn').disabled=on}
+
+async function continueLunch(){
+  if(lunchState.quiz){setLunchNote('先にクイズの答えを選んで。');return}
+  const task=chooseLunchTask();
+  await runLunchTask(task);
+}
+
+async function deepenLunch(){
+  lunchState.deepCount=(lunchState.deepCount||0)+1;
+  await runLunchTask('deepen',{topic:lunchState.currentTopic,depth:lunchState.deepCount});
+}
+
+function answerQuiz(label){
+  if(!lunchState.quiz)return;
+  const m=String(label).match(/^([A-D])\./);const chosen=m?m[1]:String(label).slice(0,1);
+  appendMsg('lunchChat','user',label);
+  const q=lunchState.quiz;const ok=chosen===q.correct;
+  const lead=ok?'正解。':'惜しい。';
+  const text=`${lead} ${q.explanation||''}`.trim();
+  showLunchSpeech(text);lunchState.history.push({role:'user',content:`クイズ回答: ${chosen}`},{role:'assistant',content:text});
+  lunchState.currentTopic=q.topic||lunchState.currentTopic;lunchState.quiz=null;$('lunchQuick').innerHTML='';setDeepen(true);setLunchNote('もう少し知りたければ「詳しく」。食べるなら「続ける」。');setContinueLock(10);
+}
+
+function answerFullness(v){
+  const n=Number(v);appendMsg('lunchChat','user',`${n}分目`);lunchState.fullness.push(n);
+  if(secs()>=720)lunchState.full2=true;else lunchState.full1=true;
+  $('lunchQuick').innerHTML='';
+  const text=n>=8?'うん、十分に近いな。覚えとく。まだ終わりにはしない。少し食べながら次いこう。':'まだ余白あり。了解。じゃあ満腹の話は一旦おしまい。';
+  showLunchSpeech(text);lunchState.history.push({role:'user',content:`満腹度 ${n}/10`},{role:'assistant',content:text});setLunchNote('');setContinueLock(10);
+}
+
+function answerChew(v){
+  appendMsg('lunchChat','user',v);lunchState.chewDone=true;$('lunchQuick').innerHTML='';
+  const text='OK。今日はもう噛む回数はいじらない。忘れて普通に食おう。';
+  showLunchSpeech(text);lunchState.history.push({role:'user',content:`噛む回数: ${v}`},{role:'assistant',content:text});setLunchNote('');setContinueLock(12);
+}
+
 function setContinueLock(n){clearInterval(continueLock);let b=$('continueBtn'),left=n;b.disabled=true;b.textContent=`続ける　あと${left}秒`;continueLock=setInterval(()=>{left--;if(left<=0){clearInterval(continueLock);b.disabled=false;b.textContent='続ける'}else b.textContent=`続ける　あと${left}秒`},1000)}
 function finishLunchManual(){if(secs()<900&&!confirm('まだ15分前だけど、今日はここで終える？'))return;finishLunch()}
-function finishLunch(){clearInterval(timer);clearInterval(continueLock);let min=Math.max(1,Math.round(secs()/60)),f=lunchState.fullness.at(-1)||'-';let end=secs()>=900?'C':'manual';let rec={date:new Date().toISOString(),place:lunchState.place,menu:lunchState.menu,size:lunchState.size,minutes:min,fullness:f,end};let ls=logs();ls.push(rec);localStorage.setItem('hirushika:logs',JSON.stringify(ls));hideAll();$('finish').classList.remove('hidden');$('summary').innerHTML=`<b>${min}分。</b><br>${lunchState.place} / ${lunchState.menu} / ${lunchState.size}<br>最後に記録できた満腹度：<b>${f}分目</b><br><br>🦌 ${min>=15?'気づけば15分。今日はそれで十分。':'今日は短め。そういう昼もある。'}<br><br><span class="muted">夜のことは知らん。俺、ひるしかだから。</span>`}
+function finishLunch(){
+  clearInterval(timer);clearInterval(continueLock);
+  const min=Math.max(1,Math.round(secs()/60));const f=lastItem(lunchState.fullness)||'-';const end=secs()>=900?'complete':'manual';
+  const rec={date:new Date().toISOString(),place:lunchState.place,menu:lunchState.menu,size:lunchState.size,minutes:min,fullness:f,end};
+  const ls=logs();ls.push(rec);localStorage.setItem('hirushika:logs',JSON.stringify(ls));
+  hideAll();$('finish').classList.remove('hidden');
+  $('finishLine').textContent='🦌 '+(min>=15?'気づけば、ちゃんと昼を食ったな。':'今日は短め。でも記録は残した。次またやろう。');
+  $('summary').innerHTML=`<b>${min}分</b>のランチ。<br>${lunchState.place} / ${lunchState.menu} / ${lunchState.size}<br>最後の満腹度：<b>${f==='-'?'未記録':f+'分目'}</b>`;
+  const parts=[];if(lunchState.chewDone)parts.push('噛む回数を1回だけ意識');if(lunchState.full1||lunchState.full2)parts.push(`満腹度を${lunchState.fullness.length}回確認`);if(lunchState.currentTopic)parts.push(`最後の話題：${lunchState.currentTopic}`);
+  $('finishLog').innerHTML=`<b>今日のログ</b><br>${parts.length?parts.join('<br>'):'今日は記録少なめ。'}<br><br><span class="muted">夜のことは知らん。俺、ひるしかだから。</span>`;
+}
 
 window.addEventListener('beforeinstallprompt',e=>{e.preventDefault();deferredPrompt=e;$('installBtn').classList.remove('hidden')});
 $('installBtn').onclick=async()=>{if(deferredPrompt){deferredPrompt.prompt();await deferredPrompt.userChoice;deferredPrompt=null;$('installBtn').classList.add('hidden')}};
