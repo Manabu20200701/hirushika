@@ -5,13 +5,57 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#4b3427">
 <meta name="apple-mobile-web-app-capable" content="yes">
-<title>ひるしか Ver.0.63</title>
+<title>ひるしか Ver.0.64</title>
 <link rel="manifest" href="manifest.webmanifest">
 <style>
 :root{--bg:#f6efe4;--card:#fffaf2;--ink:#4b3427;--accent:#c78c52;--line:#e6d3bf;--soft:#f0e3d5;--ok:#e7f1e6}
 *{box-sizing:border-box}body{margin:0;font-family:system-ui,-apple-system,'Noto Sans JP','Segoe UI',sans-serif;background:var(--bg);color:var(--ink)}
 main{max-width:560px;margin:auto;min-height:100dvh;padding:16px 16px calc(24px + env(safe-area-inset-bottom))}.card{background:var(--card);border:1px solid var(--line);border-radius:26px;padding:20px;box-shadow:0 10px 30px #6b4b2d18;min-height:calc(100dvh - 32px);display:flex;flex-direction:column}.hidden{display:none}.hero{align-items:center;text-align:center;justify-content:center}.brand{width:170px;height:170px;object-fit:cover;border-radius:50%;margin-bottom:10px}.mini{width:76px;height:76px;object-fit:cover;border-radius:50%;display:block;margin:0 auto 8px}.title{font-size:38px;font-weight:900}.sub{opacity:.75;line-height:1.7;margin:4px 0 28px}.btns{display:grid;gap:10px;margin-top:auto}.btn{width:100%;min-height:58px;border-radius:17px;border:1px solid var(--line);background:#fff;color:var(--ink);font-size:17px;font-weight:750;padding:13px 15px}.btn:disabled{opacity:.45;background:#eee6dc}.primary{background:var(--ink);color:#fff;border-color:var(--ink)}.danger{font-size:14px;min-height:44px;opacity:.7}.ghost{background:transparent}.small{font-size:13px;min-height:40px}.chat{display:flex;flex-direction:column;gap:12px;margin:10px 0 14px;overflow:auto;max-height:55dvh;padding-right:2px}.msg{max-width:88%;padding:12px 14px;border-radius:18px;line-height:1.65;white-space:pre-line;font-size:17px}.ai{align-self:flex-start;background:var(--soft);border-bottom-left-radius:6px}.user{align-self:flex-end;background:#fff;border:1px solid var(--line);border-bottom-right-radius:6px}.typing{opacity:.65;font-style:italic}.composer{display:flex;gap:8px;margin-top:10px}.composer textarea{flex:1;min-height:50px;max-height:120px;resize:vertical;border:1px solid var(--line);border-radius:15px;padding:12px;font-size:16px;background:#fff}.send{width:78px}.quick{display:flex;gap:8px;flex-wrap:wrap;margin:4px 0 2px}.chip{border:1px solid var(--line);border-radius:999px;background:#fff;padding:11px 14px;font-size:15px;color:var(--ink)}.chip:disabled{opacity:.45}.meta{display:flex;justify-content:space-between;font-size:13px;opacity:.65}.progress{height:8px;background:#eadbcb;border-radius:99px;overflow:hidden;margin:10px 0}.progress div{height:100%;background:var(--accent)}input,select{width:100%;font-size:16px;padding:15px;border:1px solid var(--line);border-radius:14px;background:#fff;margin:6px 0 14px}.memory{background:var(--soft);border-radius:15px;padding:12px;margin-bottom:14px;font-size:14px;line-height:1.55}.muted{opacity:.65;font-size:14px;line-height:1.6}.status{border-radius:14px;padding:10px 12px;font-size:13px;margin:8px 0}.status.ok{background:var(--ok)}.status.ng{background:#f7e2df}.row{display:flex;gap:8px}.row>*{flex:1}.summary{font-size:17px;line-height:1.9;margin:14px 0}.section-title{font-size:18px;font-weight:800;margin:4px 0 8px}.road-hero{width:100%;display:block;border-radius:20px;border:1px solid var(--line);margin:4px 0 14px;aspect-ratio:4/1;object-fit:cover}.road-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:0 0 14px}.stat{background:var(--soft);border-radius:15px;padding:10px 8px;text-align:center}.stat b{display:block;font-size:22px}.stat span{font-size:12px;opacity:.7}.road-list{display:grid;gap:10px}.road-item{border:1px solid var(--line);border-radius:16px;background:#fff;padding:12px 14px}.road-top{display:flex;justify-content:space-between;gap:10px;align-items:baseline}.road-date{font-size:13px;opacity:.65}.road-time{font-size:18px;font-weight:900}.road-menu{font-size:16px;font-weight:750;margin-top:4px}.road-place{font-size:13px;opacity:.7;margin-top:3px}.road-full{font-size:12px;opacity:.65;margin-top:7px}.road-empty{display:flex;flex-direction:column;align-items:center;text-align:center;padding:10px 4px 4px}.road-empty img{width:min(320px,88%);border-radius:18px;border:1px solid var(--line)}.road-empty p{line-height:1.7}.scene{width:180px;max-width:55%;border-radius:17px;border:1px solid var(--line);margin:2px auto 8px;display:block}.scene.hidden{display:none}.finish-art{width:min(300px,76%);display:block;margin:0 auto 8px;border-radius:18px;border:1px solid var(--line)}
-@media(max-width:599px){main{max-width:none;width:100%;padding:0 0 env(safe-area-inset-bottom)}.card{width:100%;min-height:100dvh;padding:20px 18px 24px;border-radius:0;border-left:0;border-right:0}.chat{max-height:62dvh;gap:14px}.msg{max-width:96%;font-size:18px;line-height:1.7;padding:14px 15px}.summary{font-size:19px}.memory{font-size:16px}.mini{width:90px;height:90px}.meta{font-size:14px}.section-title{font-size:20px}.composer textarea{font-size:17px}.title{font-size:42px}.road-hero{border-radius:0;margin-left:-18px;width:calc(100% + 36px);max-width:none}.road-stats{gap:6px}.stat b{font-size:24px}.scene{width:220px;max-width:68%}}
+@media(max-width:599px){
+  html,body{width:100%;min-height:100%;font-size:18px}
+  main{max-width:none;width:100%;padding:0 0 env(safe-area-inset-bottom)}
+  .card{width:100%;min-height:100dvh;padding:18px 10px 22px;border-radius:0;border:0;box-shadow:none}
+  .hero{padding-left:14px;padding-right:14px}
+  .brand{width:220px;height:220px;margin-bottom:14px}
+  .mini{width:112px;height:112px;margin-bottom:10px}
+  .title{font-size:46px;line-height:1.1}
+  .sub{font-size:19px;line-height:1.8;margin-bottom:24px}
+  .btns{gap:12px}
+  .btn{min-height:64px;border-radius:18px;font-size:19px;padding:15px 16px}
+  .btn.small{min-height:50px;font-size:16px}
+  .btn.danger{min-height:52px;font-size:16px}
+  .chat{max-height:64dvh;gap:14px;margin:10px 0 14px}
+  .msg{max-width:98%;font-size:19px;line-height:1.72;padding:15px 16px;border-radius:20px}
+  .meta{font-size:16px;padding:0 4px}
+  .progress{height:10px;margin:12px 2px}
+  input,select{font-size:18px;padding:17px 15px;border-radius:16px;margin:7px 0 16px}
+  label{font-size:17px;font-weight:700}
+  .composer{gap:10px}
+  .composer textarea{font-size:18px;min-height:58px;padding:14px;border-radius:16px}
+  .send{width:90px;min-height:58px}
+  .quick{gap:9px}
+  .chip{font-size:17px;padding:13px 16px}
+  .summary{font-size:20px;line-height:1.9}
+  .memory{font-size:17px;line-height:1.65;padding:14px}
+  .muted{font-size:16px;line-height:1.65}
+  .section-title{font-size:24px;margin-top:8px}
+  h2{font-size:28px;margin:10px 0 18px}
+  .road-hero{border-radius:0;margin:0 -10px 16px;width:calc(100% + 20px);max-width:none;aspect-ratio:3.25/1}
+  .road-stats{gap:7px;margin-bottom:16px}
+  .stat{padding:12px 6px;border-radius:16px}
+  .stat b{font-size:28px}
+  .stat span{font-size:13px}
+  .road-list{gap:12px}
+  .road-item{padding:15px 16px;border-radius:18px}
+  .road-date{font-size:15px}.road-time{font-size:21px}.road-menu{font-size:19px}.road-place{font-size:15px}.road-full{font-size:14px}
+  .road-empty{padding:8px 0 4px}.road-empty img{width:min(430px,96%)}.road-empty p{font-size:18px}
+  .scene{width:min(360px,88%);max-width:none;border-radius:20px;margin:4px auto 10px}
+  .finish-art{width:min(430px,92%);border-radius:20px;margin-bottom:12px}
+  #finishLine{font-size:19px!important}
+}
+@media(max-width:380px){
+  .brand{width:190px;height:190px}.title{font-size:42px}.btn{font-size:18px}.msg{font-size:18px}.card{padding-left:9px;padding-right:9px}
+}
 @media(min-width:600px){main{padding:24px}.card{min-height:700px}}
 </style>
 </head>
@@ -27,7 +71,7 @@ main{max-width:560px;margin:auto;min-height:100dvh;padding:16px 16px calc(24px +
     <button class="btn small ghost" onclick="showSettings()">AI接続設定</button>
     <button id="installBtn" class="btn hidden">ホーム画面に追加</button>
   </div>
-  <p class="muted">Ver.0.63｜ひるしかロード追加</p>
+  <p class="muted">Ver.0.64｜スマホUI大型化</p>
 </section>
 
 <section id="road" class="card hidden">
