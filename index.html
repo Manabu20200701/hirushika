@@ -5,12 +5,13 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#4b3427">
 <meta name="apple-mobile-web-app-capable" content="yes">
-<title>ひるしか Ver.0.6</title>
+<title>ひるしか Ver.0.62</title>
 <link rel="manifest" href="manifest.webmanifest">
 <style>
 :root{--bg:#f6efe4;--card:#fffaf2;--ink:#4b3427;--accent:#c78c52;--line:#e6d3bf;--soft:#f0e3d5;--ok:#e7f1e6}
 *{box-sizing:border-box}body{margin:0;font-family:system-ui,-apple-system,'Noto Sans JP','Segoe UI',sans-serif;background:var(--bg);color:var(--ink)}
-main{max-width:560px;margin:auto;min-height:100dvh;padding:16px 16px calc(24px + env(safe-area-inset-bottom))}.card{background:var(--card);border:1px solid var(--line);border-radius:26px;padding:20px;box-shadow:0 10px 30px #6b4b2d18;min-height:calc(100dvh - 32px);display:flex;flex-direction:column}.hidden{display:none}.hero{align-items:center;text-align:center;justify-content:center}.brand{width:170px;height:170px;object-fit:cover;border-radius:50%;margin-bottom:10px}.mini{width:76px;height:76px;object-fit:cover;border-radius:50%;display:block;margin:0 auto 8px}.title{font-size:38px;font-weight:900}.sub{opacity:.75;line-height:1.7;margin:4px 0 28px}.btns{display:grid;gap:10px;margin-top:auto}.btn{width:100%;min-height:54px;border-radius:17px;border:1px solid var(--line);background:#fff;color:var(--ink);font-size:16px;font-weight:750;padding:12px 14px}.btn:disabled{opacity:.45;background:#eee6dc}.primary{background:var(--ink);color:#fff;border-color:var(--ink)}.danger{font-size:14px;min-height:44px;opacity:.7}.ghost{background:transparent}.small{font-size:13px;min-height:40px}.chat{display:flex;flex-direction:column;gap:12px;margin:10px 0 14px;overflow:auto;max-height:55dvh;padding-right:2px}.msg{max-width:88%;padding:12px 14px;border-radius:18px;line-height:1.65;white-space:pre-line;font-size:17px}.ai{align-self:flex-start;background:var(--soft);border-bottom-left-radius:6px}.user{align-self:flex-end;background:#fff;border:1px solid var(--line);border-bottom-right-radius:6px}.typing{opacity:.65;font-style:italic}.composer{display:flex;gap:8px;margin-top:10px}.composer textarea{flex:1;min-height:50px;max-height:120px;resize:vertical;border:1px solid var(--line);border-radius:15px;padding:12px;font-size:16px;background:#fff}.send{width:78px}.quick{display:flex;gap:8px;flex-wrap:wrap;margin:4px 0 2px}.chip{border:1px solid var(--line);border-radius:999px;background:#fff;padding:9px 12px;font-size:14px;color:var(--ink)}.chip:disabled{opacity:.45}.meta{display:flex;justify-content:space-between;font-size:13px;opacity:.65}.progress{height:8px;background:#eadbcb;border-radius:99px;overflow:hidden;margin:10px 0}.progress div{height:100%;background:var(--accent)}input,select{width:100%;font-size:16px;padding:15px;border:1px solid var(--line);border-radius:14px;background:#fff;margin:6px 0 14px}.memory{background:var(--soft);border-radius:15px;padding:12px;margin-bottom:14px;font-size:14px;line-height:1.55}.muted{opacity:.65;font-size:14px;line-height:1.6}.status{border-radius:14px;padding:10px 12px;font-size:13px;margin:8px 0}.status.ok{background:var(--ok)}.status.ng{background:#f7e2df}.row{display:flex;gap:8px}.row>*{flex:1}.summary{font-size:17px;line-height:1.9;margin:14px 0}.section-title{font-size:18px;font-weight:800;margin:4px 0 8px}
+main{max-width:560px;margin:auto;min-height:100dvh;padding:16px 16px calc(24px + env(safe-area-inset-bottom))}.card{background:var(--card);border:1px solid var(--line);border-radius:26px;padding:20px;box-shadow:0 10px 30px #6b4b2d18;min-height:calc(100dvh - 32px);display:flex;flex-direction:column}.hidden{display:none}.hero{align-items:center;text-align:center;justify-content:center}.brand{width:170px;height:170px;object-fit:cover;border-radius:50%;margin-bottom:10px}.mini{width:76px;height:76px;object-fit:cover;border-radius:50%;display:block;margin:0 auto 8px}.title{font-size:38px;font-weight:900}.sub{opacity:.75;line-height:1.7;margin:4px 0 28px}.btns{display:grid;gap:10px;margin-top:auto}.btn{width:100%;min-height:58px;border-radius:17px;border:1px solid var(--line);background:#fff;color:var(--ink);font-size:17px;font-weight:750;padding:13px 15px}.btn:disabled{opacity:.45;background:#eee6dc}.primary{background:var(--ink);color:#fff;border-color:var(--ink)}.danger{font-size:14px;min-height:44px;opacity:.7}.ghost{background:transparent}.small{font-size:13px;min-height:40px}.chat{display:flex;flex-direction:column;gap:12px;margin:10px 0 14px;overflow:auto;max-height:55dvh;padding-right:2px}.msg{max-width:88%;padding:12px 14px;border-radius:18px;line-height:1.65;white-space:pre-line;font-size:17px}.ai{align-self:flex-start;background:var(--soft);border-bottom-left-radius:6px}.user{align-self:flex-end;background:#fff;border:1px solid var(--line);border-bottom-right-radius:6px}.typing{opacity:.65;font-style:italic}.composer{display:flex;gap:8px;margin-top:10px}.composer textarea{flex:1;min-height:50px;max-height:120px;resize:vertical;border:1px solid var(--line);border-radius:15px;padding:12px;font-size:16px;background:#fff}.send{width:78px}.quick{display:flex;gap:8px;flex-wrap:wrap;margin:4px 0 2px}.chip{border:1px solid var(--line);border-radius:999px;background:#fff;padding:11px 14px;font-size:15px;color:var(--ink)}.chip:disabled{opacity:.45}.meta{display:flex;justify-content:space-between;font-size:13px;opacity:.65}.progress{height:8px;background:#eadbcb;border-radius:99px;overflow:hidden;margin:10px 0}.progress div{height:100%;background:var(--accent)}input,select{width:100%;font-size:16px;padding:15px;border:1px solid var(--line);border-radius:14px;background:#fff;margin:6px 0 14px}.memory{background:var(--soft);border-radius:15px;padding:12px;margin-bottom:14px;font-size:14px;line-height:1.55}.muted{opacity:.65;font-size:14px;line-height:1.6}.status{border-radius:14px;padding:10px 12px;font-size:13px;margin:8px 0}.status.ok{background:var(--ok)}.status.ng{background:#f7e2df}.row{display:flex;gap:8px}.row>*{flex:1}.summary{font-size:17px;line-height:1.9;margin:14px 0}.section-title{font-size:18px;font-weight:800;margin:4px 0 8px}
+@media(max-width:599px){main{max-width:none;width:100%;padding:0 0 env(safe-area-inset-bottom)}.card{width:100%;min-height:100dvh;padding:20px 18px 24px;border-radius:0;border-left:0;border-right:0}.chat{max-height:62dvh;gap:14px}.msg{max-width:96%;font-size:18px;line-height:1.7;padding:14px 15px}.summary{font-size:19px}.memory{font-size:16px}.mini{width:90px;height:90px}.meta{font-size:14px}.section-title{font-size:20px}.composer textarea{font-size:17px}.title{font-size:42px}}
 @media(min-width:600px){main{padding:24px}.card{min-height:700px}}
 </style>
 </head>
@@ -25,7 +26,7 @@ main{max-width:560px;margin:auto;min-height:100dvh;padding:16px 16px calc(24px +
     <button class="btn small ghost" onclick="showSettings()">AI接続設定</button>
     <button id="installBtn" class="btn hidden">ホーム画面に追加</button>
   </div>
-  <p class="muted">Ver.0.6｜15分ランチ再設計版</p>
+  <p class="muted">Ver.0.62｜昼の寄り道・10分噛みチャレンジ・大画面版</p>
 </section>
 
 <section id="settings" class="card hidden">
@@ -149,7 +150,7 @@ function lunchContext(){return {elapsed_seconds:secs(),place:lunchState.place,me
 
 async function startLunch(){
   if(!requireApi())return;
-  lunchState={place:$('place').value.trim()||'未登録',menu:$('menu').value.trim()||'未登録',size:$('size').value,history:[],fullness:[],turn:0,chewDone:false,full1:false,full2:false,currentTopic:'',deepCount:0,lastKind:'',quiz:null};
+  lunchState={place:$('place').value.trim()||'未登録',menu:$('menu').value.trim()||'未登録',size:$('size').value,history:[],fullness:[],turn:0,chewDone:false,chewChoice:'',chewAwaitingDone:false,detourDone:false,detour:null,full1:false,full2:false,currentTopic:'',deepCount:0,lastKind:'',quiz:null,eventKinds:[],eventIds:[],recentSpeeches:[]};
   startedAt=Date.now();hideAll();$('lunch').classList.remove('hidden');$('lunchChat').innerHTML='';$('lunchQuick').innerHTML='';$('lunchNote').classList.add('hidden');$('deepenBtn').classList.add('hidden');$('finishBtn').className='btn danger';tick();timer=setInterval(tick,1000);
   await runLunchTask('opening');
 }
@@ -157,16 +158,20 @@ async function startLunch(){
 function chooseLunchTask(){
   const s=secs();
   if(s>=900)return 'closing';
-  if(s>=720 && !lunchState.full2)return 'fullness';
-  if(s>=420 && !lunchState.full1)return 'fullness';
-  if(s>=180 && !lunchState.chewDone)return 'chew';
+  // 15分の流れはアプリ側で管理。介入は時刻を決め、何度も出さない。
+  if(s>=780 && !lunchState.full2)return 'fullness';
+  if(s>=600 && !lunchState.chewDone && !lunchState.chewAwaitingDone)return 'chew';
+  if(s>=500 && !lunchState.detourDone)return 'detour';
+  if(s>=390 && !lunchState.full1)return 'fullness';
   lunchState.turn++;
-  // 2〜3ターンに1回はクイズ。連続クイズは避ける。
-  if(lunchState.lastKind!=='quiz' && (lunchState.turn%3===1 || (s>480 && lunchState.turn%2===0))) return 'quiz';
-  if(lunchState.turn%4===0)return 'pause';
+  const recentIds=(lunchState.eventIds||[]).slice(-4);
+  const recentKinds=(lunchState.eventKinds||[]).slice(-3);
+  const canKind=k=>!recentKinds.includes(k);
+  // クイズは多くても数分に1回。食事介入ばかりにしない。
+  if(canKind('quiz') && !recentIds.includes('quiz') && (lunchState.turn%4===1 || (s>690 && lunchState.turn%4===2))) return 'quiz';
+  if(canKind('pause') && !recentIds.includes('pause') && lunchState.turn%5===0)return 'pause';
   return 'continue';
 }
-
 async function callLunchTask(task,extra={}){
   let u=apiUrl(); if(!u)throw new Error('API未設定');
   const payload={
@@ -176,6 +181,10 @@ async function callLunchTask(task,extra={}){
     restaurant:lunchState.place,menu:lunchState.menu,portion:lunchState.size,
     topic:lunchState.currentTopic||'',deepCount:lunchState.deepCount||0,
     extra,
+    recentEventKinds:(lunchState.eventKinds||[]).slice(-5),
+    recentEventIds:(lunchState.eventIds||[]).slice(-6),
+    recentSpeeches:(lunchState.recentSpeeches||[]).slice(-5),
+    chewDone:lunchState.chewDone,
     memory:{profile:loadMemory(),recent_meals:recentMealSummary(),known_fullness:lunchState.fullness}
   };
   const r=await fetch(u+'/chat',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)});
@@ -190,27 +199,49 @@ async function runLunchTask(task,extra={}){
   disableLunchActions(true);setLunchNote('');setDeepen(false);$('lunchQuick').innerHTML='';
   let ph=appendMsg('lunchChat','ai','…',true);
   try{
-    const j=await callLunchTask(task,extra);ph.remove();
-    const speech=(j.speech||j.reply||'').trim();showLunchSpeech(speech);
-    if(speech)lunchState.history.push({role:'assistant',content:speech});
-    lunchState.lastKind=j.kind||task;
+    let j=await callLunchTask(task,extra);
+    // 同じ文が再度返った場合は、画面に出す前に一度だけ取り直す。
+    const normalize=s=>String(s||'').replace(/\s+/g,'').replace(/[。、！？!?]/g,'');
+    const recent=(lunchState.recentSpeeches||[]).slice(-4).map(normalize);
+    let speech=(j.speech||j.reply||'').trim();
+    if(speech && recent.includes(normalize(speech)) && !extra.retry){
+      j=await callLunchTask(task,{...extra,retry:true,avoid_exact:speech});
+      speech=(j.speech||j.reply||'').trim();
+    }
+    ph.remove();showLunchSpeech(speech);
+    if(speech){
+      lunchState.history.push({role:'assistant',content:speech});
+      lunchState.recentSpeeches.push(speech);
+      lunchState.recentSpeeches=lunchState.recentSpeeches.slice(-8);
+    }
+    const fixedKinds=['quiz','fullness','chew','detour','closing'];
+    const eventKind=fixedKinds.includes(task)?task:(j.kind||task);
+    const eventId=j.event_id||eventKind;
+    lunchState.lastKind=eventKind;
+    lunchState.eventKinds.push(eventKind);lunchState.eventKinds=lunchState.eventKinds.slice(-10);
+    lunchState.eventIds.push(eventId);lunchState.eventIds=lunchState.eventIds.slice(-12);
     if(j.topic)lunchState.currentTopic=j.topic;
     if(j.can_deepen)setDeepen(true);
 
-    if((j.kind||task)==='quiz'){
+    if(eventKind==='quiz'){
       lunchState.quiz={correct:j.correct||'',explanation:j.explanation||'',topic:j.topic||lunchState.currentTopic,choices:j.choices||[]};
       renderQuick('lunchQuick',(j.choices||[]).map(c=>typeof c==='string'?c:`${c.id}. ${c.label}`),answerQuiz,0);
-      setLunchNote('答えを選んだら、ひるしかが続きを話す。');
-    } else if((j.kind||task)==='fullness'){
+      setLunchNote('食べながら考えて。答えを選んだら続く。');
+    } else if(eventKind==='fullness'){
       renderQuick('lunchQuick',['4','5','6','7','8','9','10'],answerFullness,0);
       setLunchNote('いまの感覚で。正解はない。');
-    } else if((j.kind||task)==='chew'){
-      renderQuick('lunchQuick',['10回くらい','15回くらい','20回くらい','25回以上'],answerChew,0);
-      setLunchNote('次の一口だけ数えればOK。終わったら忘れよう。');
-    } else if((j.kind||task)==='closing'){
+    } else if(eventKind==='chew'){
+      renderQuick('lunchQuick',['15回','20回','25回','普通でいい'],answerChewChoice,0);
+      setLunchNote('10分あたりの一回だけ。次の一口、何回でいく？');
+    } else if(eventKind==='detour'){
+      lunchState.detour={topic:j.topic||'昼の寄り道',choices:j.choices||[]};
+      const choices=(j.choices||[]).map(c=>typeof c==='string'?c:(c.label||c.id));
+      renderQuick('lunchQuick',choices.length?choices:['A','B','C'],answerDetour,0);
+      setLunchNote('30秒くらい寄り道。考えながら食べればいい。');
+    } else if(eventKind==='closing'){
       setLunchNote('15分。ここからは、食べ終わったら終了でOK。');
     }
-    setContinueLock(task==='pause'?15:10);
+    setContinueLock(task==='pause'||task==='detour'?15:10);
   }catch(e){ph.remove();showLunchSpeech('通信がちょっと詰まった。まあ、その間にひと口いこう。');setContinueLock(8)}
   finally{disableLunchActions(false)}
 }
@@ -236,21 +267,42 @@ function answerQuiz(label){
   const lead=ok?'正解。':'惜しい。';
   const text=`${lead} ${q.explanation||''}`.trim();
   showLunchSpeech(text);lunchState.history.push({role:'user',content:`クイズ回答: ${chosen}`},{role:'assistant',content:text});
-  lunchState.currentTopic=q.topic||lunchState.currentTopic;lunchState.quiz=null;$('lunchQuick').innerHTML='';setDeepen(true);setLunchNote('もう少し知りたければ「詳しく」。食べるなら「続ける」。');setContinueLock(10);
+  lunchState.currentTopic=q.topic||lunchState.currentTopic;lunchState.quiz=null;lunchState.eventKinds.push('quiz_answer');lunchState.eventKinds=lunchState.eventKinds.slice(-8);$('lunchQuick').innerHTML='';setDeepen(true);setLunchNote('もう少し知りたければ「詳しく」。食べるなら「続ける」。');setContinueLock(10);
 }
 
 function answerFullness(v){
   const n=Number(v);appendMsg('lunchChat','user',`${n}分目`);lunchState.fullness.push(n);
-  if(secs()>=720)lunchState.full2=true;else lunchState.full1=true;
+  if(secs()>=720)lunchState.full2=true;else lunchState.full1=true;lunchState.eventKinds.push('fullness_answer');lunchState.eventKinds=lunchState.eventKinds.slice(-8);
   $('lunchQuick').innerHTML='';
   const text=n>=8?'うん、十分に近いな。覚えとく。まだ終わりにはしない。少し食べながら次いこう。':'まだ余白あり。了解。じゃあ満腹の話は一旦おしまい。';
   showLunchSpeech(text);lunchState.history.push({role:'user',content:`満腹度 ${n}/10`},{role:'assistant',content:text});setLunchNote('');setContinueLock(10);
 }
 
-function answerChew(v){
-  appendMsg('lunchChat','user',v);lunchState.chewDone=true;$('lunchQuick').innerHTML='';
-  const text='OK。今日はもう噛む回数はいじらない。忘れて普通に食おう。';
-  showLunchSpeech(text);lunchState.history.push({role:'user',content:`噛む回数: ${v}`},{role:'assistant',content:text});setLunchNote('');setContinueLock(12);
+function answerChewChoice(v){
+  appendMsg('lunchChat','user',v);$('lunchQuick').innerHTML='';lunchState.chewChoice=v;
+  if(v==='普通でいい'){
+    lunchState.chewDone=true;lunchState.eventKinds.push('chew_answer');lunchState.eventIds.push('chew_skip');
+    const text='了解。今日は数えない。普通に食おう。';showLunchSpeech(text);lunchState.history.push({role:'user',content:'噛みチャレンジ: 普通でいい'},{role:'assistant',content:text});setLunchNote('');setContinueLock(10);return;
+  }
+  lunchState.chewAwaitingDone=true;
+  const text=`じゃあ次の一口だけ${v}。数えてみよう。終わったら「できた」で戻ってきて。`;
+  showLunchSpeech(text);lunchState.history.push({role:'user',content:`噛みチャレンジ: ${v}`},{role:'assistant',content:text});
+  renderQuick('lunchQuick',['できた','やめとく'],answerChewDone,0);setLunchNote('この一口だけで終了。');setContinueLock(12);
+}
+function answerChewDone(v){
+  appendMsg('lunchChat','user',v);$('lunchQuick').innerHTML='';lunchState.chewAwaitingDone=false;lunchState.chewDone=true;
+  lunchState.eventKinds.push('chew_answer');lunchState.eventKinds=lunchState.eventKinds.slice(-10);lunchState.eventIds.push('chew_done');lunchState.eventIds=lunchState.eventIds.slice(-12);
+  const text=v==='できた'?'はい、これで噛む話は終わり。あとは忘れて普通に食おう。':'OK。無理にやらなくていい。あとは普通に食おう。';
+  showLunchSpeech(text);lunchState.history.push({role:'user',content:`噛みチャレンジ結果: ${v}`},{role:'assistant',content:text});setLunchNote('');setContinueLock(10);
+}
+async function answerDetour(v){
+  appendMsg('lunchChat','user',v);$('lunchQuick').innerHTML='';lunchState.detourDone=true;
+  lunchState.eventKinds.push('detour_answer');lunchState.eventKinds=lunchState.eventKinds.slice(-10);lunchState.eventIds.push('detour_answer');lunchState.eventIds=lunchState.eventIds.slice(-12);
+  const ph=appendMsg('lunchChat','ai','…',true);
+  try{
+    const j=await callLunchTask('detour_reply',{answer:v,topic:lunchState.detour?.topic||''});ph.remove();const text=(j.speech||j.reply||'その選び方、嫌いじゃない。じゃあ昼飯に戻ろう。').trim();showLunchSpeech(text);lunchState.history.push({role:'user',content:`昼の寄り道回答: ${v}`},{role:'assistant',content:text});if(j.topic)lunchState.currentTopic=j.topic;
+  }catch(e){ph.remove();showLunchSpeech('その選び方、嫌いじゃない。じゃあ昼飯に戻ろう。')}
+  setLunchNote('');setContinueLock(12);
 }
 
 function setContinueLock(n){clearInterval(continueLock);let b=$('continueBtn'),left=n;b.disabled=true;b.textContent=`続ける　あと${left}秒`;continueLock=setInterval(()=>{left--;if(left<=0){clearInterval(continueLock);b.disabled=false;b.textContent='続ける'}else b.textContent=`続ける　あと${left}秒`},1000)}
@@ -261,9 +313,9 @@ function finishLunch(){
   const rec={date:new Date().toISOString(),place:lunchState.place,menu:lunchState.menu,size:lunchState.size,minutes:min,fullness:f,end};
   const ls=logs();ls.push(rec);localStorage.setItem('hirushika:logs',JSON.stringify(ls));
   hideAll();$('finish').classList.remove('hidden');
-  $('finishLine').textContent='🦌 '+(min>=15?'気づけば、ちゃんと昼を食ったな。':'今日は短め。でも記録は残した。次またやろう。');
+  $('finishLine').textContent='🦌 '+(min>=15?'気づけば、ちゃんと昼を食ったな。':`今日は${min}分。目標まではあと${Math.max(0,15-min)}分だったな。でも記録は残した。次またやろう。`);
   $('summary').innerHTML=`<b>${min}分</b>のランチ。<br>${lunchState.place} / ${lunchState.menu} / ${lunchState.size}<br>最後の満腹度：<b>${f==='-'?'未記録':f+'分目'}</b>`;
-  const parts=[];if(lunchState.chewDone)parts.push('噛む回数を1回だけ意識');if(lunchState.full1||lunchState.full2)parts.push(`満腹度を${lunchState.fullness.length}回確認`);if(lunchState.currentTopic)parts.push(`最後の話題：${lunchState.currentTopic}`);
+  const parts=[];if(lunchState.chewDone)parts.push(`10分あたりに噛みチャレンジ${lunchState.chewChoice?`（${lunchState.chewChoice}）`:''}`);if(lunchState.detourDone)parts.push('昼の寄り道を1回');if(lunchState.full1||lunchState.full2)parts.push(`満腹度を${lunchState.fullness.length}回確認`);if(lunchState.currentTopic)parts.push(`最後の話題：${lunchState.currentTopic}`);
   $('finishLog').innerHTML=`<b>今日のログ</b><br>${parts.length?parts.join('<br>'):'今日は記録少なめ。'}<br><br><span class="muted">夜のことは知らん。俺、ひるしかだから。</span>`;
 }
 
