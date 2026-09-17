@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#4b3427">
 <meta name="apple-mobile-web-app-capable" content="yes">
-<title>ひるしか Ver.0.64</title>
+<title>ひるしか Ver.0.65</title>
 <link rel="manifest" href="manifest.webmanifest">
 <style>
 :root{--bg:#f6efe4;--card:#fffaf2;--ink:#4b3427;--accent:#c78c52;--line:#e6d3bf;--soft:#f0e3d5;--ok:#e7f1e6}
@@ -57,6 +57,120 @@ main{max-width:560px;margin:auto;min-height:100dvh;padding:16px 16px calc(24px +
   .brand{width:190px;height:190px}.title{font-size:42px}.btn{font-size:18px}.msg{font-size:18px}.card{padding-left:9px;padding-right:9px}
 }
 @media(min-width:600px){main{padding:24px}.card{min-height:700px}}
+
+/* v0.65 mobile full-width accessibility tuning */
+@media (max-width: 768px) {
+  html, body {
+    width: 100%;
+    max-width: 100%;
+    margin: 0;
+    padding: 0;
+    overflow-x: hidden;
+    -webkit-text-size-adjust: 100%;
+  }
+
+  body {
+    font-size: 19px;
+    line-height: 1.65;
+  }
+
+  main, .app, .app-shell, .container, .page, .screen, .shell, .wrap, .wrapper {
+    width: 100vw !important;
+    max-width: none !important;
+    margin: 0 !important;
+    padding-left: 0 !important;
+    padding-right: 0 !important;
+  }
+
+  .card, .panel, .home-card, .screen-card, .content-card, .finish-card, .road-card {
+    width: 100% !important;
+    max-width: none !important;
+    margin: 0 !important;
+    border-radius: 0 !important;
+    box-shadow: none !important;
+  }
+
+  .card, .panel, .home-card, .screen-card, .content-card, .finish-card, .road-card,
+  .content, .screen-content, .chat-wrap, .road-wrap {
+    padding-left: 18px !important;
+    padding-right: 18px !important;
+  }
+
+  h1, .title, .app-title {
+    font-size: 30px !important;
+    line-height: 1.25 !important;
+  }
+
+  h2, .section-title {
+    font-size: 25px !important;
+    line-height: 1.3 !important;
+  }
+
+  p, .body, .message, .bubble, .chat-bubble, .road-item, .summary, .muted, .meta {
+    font-size: 19px !important;
+  }
+
+  small, .small, .caption, .subtle {
+    font-size: 16px !important;
+  }
+
+  button, .btn, .button, .quick-reply, .choice, input, textarea, select {
+    min-height: 60px !important;
+    font-size: 18px !important;
+    border-radius: 14px !important;
+  }
+
+  .primary, .btn-primary {
+    font-size: 19px !important;
+    font-weight: 700 !important;
+  }
+
+  .hero img, .mascot img, .hirushika img, .road-hero img, .finish-hero img,
+  img.hero, img.mascot, img.hirushika, img.road-hero, img.finish-hero {
+    width: min(72vw, 360px) !important;
+    max-width: 100% !important;
+    height: auto !important;
+  }
+
+  .road-banner img, img.road-banner {
+    width: 100% !important;
+    max-width: none !important;
+    height: auto !important;
+    border-radius: 16px !important;
+  }
+
+  .chat, .messages, .conversation {
+    width: 100% !important;
+    max-width: none !important;
+  }
+
+  .bubble, .chat-bubble, .message {
+    max-width: 94% !important;
+  }
+
+  .road-list .item, .road-item, .history-item {
+    padding: 18px !important;
+    margin-bottom: 12px !important;
+  }
+
+  .stats, .road-stats {
+    gap: 10px !important;
+  }
+
+  .stats > *, .road-stats > * {
+    padding: 14px 10px !important;
+  }
+}
+
+@media (max-width: 380px) {
+  body { font-size: 18px; }
+  p, .body, .message, .bubble, .chat-bubble, .road-item, .summary { font-size: 18px !important; }
+  button, .btn, .button, .quick-reply, .choice, input, textarea, select {
+    min-height: 58px !important;
+    font-size: 17px !important;
+  }
+}
+
 </style>
 </head>
 <body><main>
@@ -71,7 +185,7 @@ main{max-width:560px;margin:auto;min-height:100dvh;padding:16px 16px calc(24px +
     <button class="btn small ghost" onclick="showSettings()">AI接続設定</button>
     <button id="installBtn" class="btn hidden">ホーム画面に追加</button>
   </div>
-  <p class="muted">Ver.0.64｜スマホUI大型化</p>
+  <p class="muted">Ver.0.65｜スマホ全面表示</p>
 </section>
 
 <section id="road" class="card hidden">
