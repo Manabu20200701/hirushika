@@ -51,6 +51,7 @@ ${recentSpeeches.map((x,i)=>`${i+1}. ${x}`).join('\n')||'なし'}
 - 直前の話題を深める必要がなければ、食文化・言葉・歴史・科学・身近な謎など別方向へ移る。
 - 英単語を不自然に混ぜず、日本語で自然に書く。例: starchではなく「でんぷん」。
 - 語源・歴史・科学的因果は、確証が弱い場合は断定しない。「〜とされる」「一説では」など確度に合った表現にする。俗説を事実として言い切らない。
+- 語源を当てるクイズは禁止。誤情報になりやすい歴史・語源ネタは避け、食品・日常科学など確度の高いテーマを優先する。
 - クイズは15分まで最大3問。quizCount=${quizCount}。既に3問なら新しいクイズを出さない。
 - 15分は終了ではなく目標ライン。15分以降はひるしかが退場せず、クイズ・噛み指導・満腹確認を止め、食べ終わるまで短く穏やかに付き合う。
 - 15分以降に「ここで締める」「退場する」「静かに離席する」「好きな速さでどうぞ」のような突き放す表現は禁止。`;
@@ -66,7 +67,7 @@ ${recentSpeeches.map((x,i)=>`${i+1}. ${x}`).join('\n')||'なし'}
           chew:`10分前後の一度だけの『噛みチャレンジ』。回数を測定する質問ではなく、「そろそろ10分。ちょっと遊ぶか。次の一口、何回でいく？」と自然に促す。選択肢はフロント側が出すのでspeechだけ。event_idはchew_challenge。kindはchew。`,
           chew_recall:`噛みチャレンジから数分後の一度だけの思い出し。さっき${chewChoice||'選んだ回数'}で噛んだことを軽く思い出させ、「今のひと口、何回くらい噛んだと思う？」と聞く。再び数えさせない。選択肢はフロント側が出すのでspeechだけ。event_idはchew_recall。kindはchew_recall。`,
           fullness:`腹何分目かを聞く。説明は短く。event_idはfullness。kindはfullness。`,
-          quiz:`雑学クイズを1問。唐突でもよいが「突然だけど」「ここで昼飯にちなんで」など一言の導入を必ず入れる。食事中に考えられる軽さ。A/B/Cの3択。正解と解説も返すがspeechでは答えを言わない。event_idはquiz。kindはquiz。`,
+          quiz:`雑学クイズを1問。唐突でもよいが「突然だけど」「ここで昼飯にちなんで」など一言の導入を必ず入れる。食事中に考えられる軽さ。A/B/Cの3択。必ずchoicesを3件、correctをA/B/Cのいずれかで返す。正解と解説も返すがspeechでは答えを言わない。語源問題は禁止。event_idはquiz。kindはquiz。`,
           detour:`『昼の寄り道』を1回。食事と直接関係しない、どうでもいいけど少し考えたくなる問いを出す。例: どっち派、日常の小さな疑問、100年前の人を一人呼ぶなら、など。重くしない。30〜60秒考えながら食べられるもの。A/B/Cの3択か短い選択肢を3つ返す。speechでは「ずっと飯の話もなんだから、30秒だけ寄り道するか」など自然に導入。event_idはdetour。kindはdetour。`,
           detour_reply:`昼の寄り道の回答「${extra.answer||''}」に、ひるしかとして1〜2文だけ軽く反応する。正解不正解はつけない。最後は昼飯へ自然に戻す。event_idはdetour_reply。kindはtalk。`,
           deepen:`現在の話題「${topic||'直前の話題'}」を本当に一段深掘りする。深掘り${deepCount}回目。30〜60秒で読めるが長すぎない。新しい具体情報を入れる。event_idはdeepen。kindはtalk、can_deepen=true。`,
@@ -100,7 +101,9 @@ ${recentSpeeches.map((x,i)=>`${i+1}. ${x}`).join('\n')||'なし'}
       }
       if(!obj || typeof obj!=='object'){
         // 内部JSONや壊れた構造を画面へ露出させない安全側フォールバック
-        obj={speech:'まあ、ここは少し食べよう。次は別の話にする。',kind:(task==='quiz'||task==='detour')?'talk':task,event_id:'fallback',choices:[],correct:'',explanation:'',can_deepen:false,topic:topic||''};
+        if(task==='quiz') obj={speech:'突然だけど、ひとつだけ。味噌はどの分類の食品？',kind:'quiz',event_id:'quiz_safe_fallback',choices:[{id:'A',label:'発酵食品'},{id:'B',label:'蒸留食品'},{id:'C',label:'乾燥食品'}],correct:'A',explanation:'正解は発酵食品。大豆などを麹の働きで発酵・熟成させて作る。',can_deepen:false,topic:'味噌'};
+        else if(task==='detour') obj={speech:'ずっと飯の話もなんだから、30秒だけ寄り道するか。休日に一時間だけ増えるなら、何に使う？',kind:'detour',event_id:'detour_safe_fallback',choices:[{id:'A',label:'寝る'},{id:'B',label:'散歩する'},{id:'C',label:'何もしない'}],correct:'',explanation:'',can_deepen:false,topic:'昼の寄り道'};
+        else obj={speech:'まあ、ここは少し食べよう。次は別の話にする。',kind:task,event_id:'fallback',choices:[],correct:'',explanation:'',can_deepen:false,topic:topic||''};
       }
       if(typeof obj.speech!=='string') obj.speech='まあ、ひと口いこう。';
       if(typeof obj.event_id!=='string'||!obj.event_id) obj.event_id=obj.kind||task;
