@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#4b3427">
 <meta name="apple-mobile-web-app-capable" content="yes">
-<title>ひるしか Ver.0.67</title>
+<title>ひるしか Ver.0.68</title>
 <link rel="manifest" href="manifest.webmanifest">
 <style>
 :root{--bg:#f6efe4;--card:#fffaf2;--ink:#4b3427;--accent:#c78c52;--line:#e6d3bf;--soft:#f0e3d5;--ok:#e7f1e6}
@@ -58,7 +58,7 @@ main{max-width:560px;margin:auto;min-height:100dvh;padding:16px 16px calc(24px +
 }
 @media(min-width:600px){main{padding:24px}.card{min-height:700px}}
 
-/* v0.67 mobile full-width accessibility tuning */
+/* v0.68 mobile full-width accessibility tuning */
 @media (max-width: 768px) {
   html, body {
     width: 100%;
@@ -172,7 +172,7 @@ main{max-width:560px;margin:auto;min-height:100dvh;padding:16px 16px calc(24px +
 }
 
 
-/* v0.67 lunch: illustration stays visible above the scrolling conversation */
+/* v0.68 lunch: illustration stays visible above the scrolling conversation */
 #lunch{height:100dvh;overflow:hidden;}
 #lunch .mini{display:none;}
 #lunch .scene-stage{flex:0 0 auto;position:relative;background:var(--card);z-index:3;padding:2px 0 8px;}
@@ -184,6 +184,55 @@ main{max-width:560px;margin:auto;min-height:100dvh;padding:16px 16px calc(24px +
   #lunch .scene{width:min(300px,70vw);height:190px;}
   #lunch .meta{font-size:18px!important;}
   #lunch .chat{max-height:none!important;}
+}
+
+
+/* v0.68: pinned quiz question + deletable road entries */
+.quiz-card{
+  position:sticky;
+  top:0;
+  z-index:8;
+  background:#fff8ef;
+  border:2px solid var(--line);
+  border-radius:18px;
+  padding:14px 16px;
+  margin:10px 0 12px;
+  box-shadow:0 6px 18px #6b4b2d16;
+}
+.quiz-card.hidden{display:none}
+.quiz-kicker{
+  font-size:13px;
+  font-weight:800;
+  opacity:.65;
+  margin-bottom:6px;
+}
+.quiz-question{
+  font-size:19px;
+  font-weight:800;
+  line-height:1.55;
+}
+.road-actions{
+  display:flex;
+  justify-content:flex-end;
+  margin-top:8px;
+}
+.road-delete{
+  border:0;
+  background:transparent;
+  color:#8b6d5c;
+  font-size:13px;
+  text-decoration:underline;
+  padding:4px 2px;
+}
+@media (max-width:768px){
+  .quiz-card{
+    top:0;
+    border-radius:16px;
+    padding:16px 17px;
+  }
+  .quiz-kicker{font-size:15px}
+  .quiz-question{font-size:20px}
+  .road-delete{font-size:15px;min-height:44px}
 }
 
 </style>
@@ -200,7 +249,7 @@ main{max-width:560px;margin:auto;min-height:100dvh;padding:16px 16px calc(24px +
     <button class="btn small ghost" onclick="showSettings()">AI接続設定</button>
     <button id="installBtn" class="btn hidden">ホーム画面に追加</button>
   </div>
-  <p class="muted">Ver.0.67｜スマホ全面表示</p>
+  <p class="muted">Ver.0.68｜スマホ全面表示</p>
 </section>
 
 <section id="road" class="card hidden">
@@ -260,6 +309,10 @@ main{max-width:560px;margin:auto;min-height:100dvh;padding:16px 16px calc(24px +
   <div class="meta"><span id="elapsed">0:00</span><span id="phaseLabel">まずは食べよう</span></div>
   <div class="progress"><div id="bar" style="width:0"></div></div>
   <div class="scene-stage"><img id="lunchScene" class="scene" src="assets/hirushika-hero.png" alt="ひるしか"></div>
+  <div id="quizCard" class="quiz-card hidden" aria-live="polite">
+    <div class="quiz-kicker">いまの小クイズ</div>
+    <div id="quizQuestion" class="quiz-question"></div>
+  </div>
   <div id="lunchChat" class="chat"></div>
   <div id="lunchQuick" class="quick"></div>
   <div id="lunchNote" class="muted hidden" style="margin-top:6px"></div>
@@ -286,7 +339,7 @@ let lunchState=null,consultState=null;
 const HKEY='hirushika:history:v05', MKEY='hirushika:memory:v05', APIKEY='hirushika:apiUrl';
 
 function hideAll(){['home','road','settings','consult','start','lunch','finish'].forEach(x=>$(x).classList.add('hidden'))}
-function goHome(){clearInterval(timer);clearInterval(continueLock);hideAll();$('home').classList.remove('hidden');loadPlaces()}
+function goHome(){clearInterval(timer);clearInterval(continueLock);clearQuizCard();hideAll();$('home').classList.remove('hidden');loadPlaces()}
 function showSettings(){hideAll();$('settings').classList.remove('hidden');$('apiUrl').value=localStorage.getItem(APIKEY)||''}
 async function saveApiUrl(){let u=$('apiUrl').value.trim().replace(/\/$/,'');localStorage.setItem(APIKEY,u);let s=$('apiStatus');s.className='status';s.classList.remove('hidden');s.textContent='接続確認中…';try{let r=await fetch(u+'/health');if(!r.ok)throw new Error();s.classList.add('ok');s.textContent='接続OK。AIひるしかを使えます。'}catch(e){s.classList.add('ng');s.textContent='接続できません。Worker URLを確認してください。'}}
 function apiUrl(){return (localStorage.getItem(APIKEY)||'').replace(/\/$/,'')}
@@ -305,14 +358,32 @@ function showRoad(){
   clearInterval(timer);clearInterval(continueLock);hideAll();$('road').classList.remove('hidden');renderRoad();
 }
 function renderRoad(){
-  const all=logs().slice().reverse(), list=$('roadList'), empty=$('roadEmpty'), stats=$('roadStats');
+  const raw=logs();
+  const all=raw.map((x,i)=>({...x,_idx:i})).reverse();
+  const list=$('roadList'), empty=$('roadEmpty'), stats=$('roadStats');
   const thisMonth=all.filter(x=>recMonthKey(x)===monthKey());
   const avg=thisMonth.length?Math.round(thisMonth.reduce((a,x)=>a+Number(x.minutes||0),0)/thisMonth.length):0;
   const longest=thisMonth.length?Math.max(...thisMonth.map(x=>Number(x.minutes||0))):0;
   stats.innerHTML=`<div class="stat"><b>${thisMonth.length}</b><span>今月の昼</span></div><div class="stat"><b>${avg||'-'}${avg?'分':''}</b><span>平均時間</span></div><div class="stat"><b>${longest||'-'}${longest?'分':''}</b><span>最長</span></div>`;
   if(!all.length){list.innerHTML='';empty.classList.remove('hidden');return}
   empty.classList.add('hidden');
-  list.innerHTML=all.map(x=>`<div class="road-item"><div class="road-top"><span class="road-date">${localDay(x)}</span><span class="road-time">${Number(x.minutes||0)}分</span></div><div class="road-menu">${escapeHtml(x.menu||'未登録')}</div><div class="road-place">${escapeHtml(x.place||'未登録')} / ${escapeHtml(x.size||'')}</div>${x.fullness&&x.fullness!=='-'?`<div class="road-full">最後の満腹度：${escapeHtml(String(x.fullness))}分目</div>`:''}</div>`).join('');
+  list.innerHTML=all.map(x=>`<div class="road-item">
+    <div class="road-top"><span class="road-date">${localDay(x)}</span><span class="road-time">${Number(x.minutes||0)}分</span></div>
+    <div class="road-menu">${escapeHtml(x.menu||'未登録')}</div>
+    <div class="road-place">${escapeHtml(x.place||'未登録')} / ${escapeHtml(x.size||'')}</div>
+    ${x.fullness&&x.fullness!=='-'?`<div class="road-full">最後の満腹度：${escapeHtml(String(x.fullness))}分目</div>`:''}
+    <div class="road-actions"><button class="road-delete" onclick="deleteRoadItem(${x._idx})">この記録を削除</button></div>
+  </div>`).join('');
+}
+function deleteRoadItem(idx){
+  const ls=logs();
+  const rec=ls[idx];
+  if(!rec)return;
+  const label=`${rec.menu||'この昼食'}（${Number(rec.minutes||0)}分）`;
+  if(!confirm(`${label} の記録を削除しますか？\\nこの操作は元に戻せません。`))return;
+  ls.splice(idx,1);
+  localStorage.setItem('hirushika:logs',JSON.stringify(ls));
+  renderRoad();
 }
 function escapeHtml(v){return String(v??'').replace(/[&<>'"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c]))}
 function setScene(kind){
@@ -320,6 +391,21 @@ function setScene(kind){
   const map={detour:'assets/hirushika-detour.png',chew:'assets/hirushika-chew.png',chew_recall:'assets/hirushika-chew.png',after15_intro:'assets/hirushika-good-lunch.png',after15_companion:'assets/hirushika-good-lunch.png',closing:'assets/hirushika-time.png'};
   el.src=map[kind]||'assets/hirushika-hero.png';
   el.classList.remove('hidden');
+}
+
+
+function setQuizCard(question=''){
+  const card=$('quizCard'), q=$('quizQuestion');
+  if(!card||!q)return;
+  const clean=String(question||'').replace(/^🦌\s*/,'').trim();
+  if(!clean){card.classList.add('hidden');q.textContent='';return}
+  q.textContent=clean;
+  card.classList.remove('hidden');
+}
+function clearQuizCard(){
+  const card=$('quizCard'), q=$('quizQuestion');
+  if(card)card.classList.add('hidden');
+  if(q)q.textContent='';
 }
 
 async function callAI(mode,history,context={}){
@@ -360,7 +446,7 @@ function tick(){let s=secs(),m=Math.floor(s/60),r=s%60;$('elapsed').textContent=
 function lastItem(arr){return arr&&arr.length?arr[arr.length-1]:null}
 function lunchContext(){return {elapsed_seconds:secs(),place:lunchState.place,menu:lunchState.menu,size:lunchState.size,known_fullness:lunchState.fullness}}
 
-async function startLunch(){
+async function startLunch(){clearQuizCard();
   if(!requireApi())return;
   lunchState={place:$('place').value.trim()||'未登録',menu:$('menu').value.trim()||'未登録',size:$('size').value,history:[],fullness:[],turn:0,quizCount:0,chewDone:false,chewChoice:'',chewAwaitingDone:false,chewCompletedAt:0,chewRecallDone:false,detourDone:false,detour:null,full1:false,full2:false,currentTopic:'',deepCount:0,lastKind:'',quiz:null,eventKinds:[],eventIds:[],recentSpeeches:[],after15Started:false};
   startedAt=Date.now();hideAll();$('lunch').classList.remove('hidden');$('lunchChat').innerHTML='';$('lunchQuick').innerHTML='';$('lunchNote').classList.add('hidden');$('deepenBtn').classList.add('hidden');$('finishBtn').className='btn danger';tick();timer=setInterval(tick,1000);
@@ -456,11 +542,12 @@ async function runLunchTask(task,extra={}){
     if(j.can_deepen)setDeepen(true);
 
     if(eventKind==='quiz'){
+      setQuizCard(speech);
       lunchState.quizCount=(lunchState.quizCount||0)+1;
       lunchState.quiz={correct:j.correct||'',explanation:j.explanation||'',topic:j.topic||lunchState.currentTopic,choices:quizChoices};
       const labels=quizChoices.map(c=>typeof c==='string'?c:`${c.id}. ${c.label}`);
       renderQuick('lunchQuick',labels,answerQuiz,0);
-      if(!$('lunchQuick').children.length){ lunchState.quiz=null; setLunchNote(''); }
+      if(!$('lunchQuick').children.length){ lunchState.quiz=null; clearQuizCard(); setLunchNote(''); }
       else setLunchNote('食べながら考えて。答えを選んだら続く。');
     } else if(eventKind==='fullness'){
       renderQuick('lunchQuick',['4','5','6','7','8','9','10'],answerFullness,0);
@@ -483,7 +570,7 @@ async function runLunchTask(task,extra={}){
       setLunchNote('もう時間は気にしなくていい。食べ終わったら「食事を終了」でOK。');
     } else if(eventKind==='talk' && (task==='quiz'||task==='detour')){
       // AIの構造化応答が壊れても、未回答クイズ状態を絶対に残さない。
-      lunchState.quiz=null; lunchState.detour=null; $('lunchQuick').innerHTML='';
+      lunchState.quiz=null; clearQuizCard(); lunchState.detour=null; $('lunchQuick').innerHTML='';
       setLunchNote('');
     }
     setContinueLock(task==='pause'||task==='detour'?15:10);
@@ -499,7 +586,7 @@ async function continueLunch(){
     const valid=Array.isArray(lunchState.quiz.choices)&&lunchState.quiz.choices.length>=2&&lunchState.quiz.correct;
     if(hasChoices&&valid){setLunchNote('先にクイズの答えを選んで。');return}
     // 選択肢が表示されていないクイズは破棄して進行を復旧する。
-    lunchState.quiz=null;$('lunchQuick').innerHTML='';setLunchNote('');
+    lunchState.quiz=null;clearQuizCard();$('lunchQuick').innerHTML='';setLunchNote('');
   }
   const task=chooseLunchTask();
   await runLunchTask(task);
@@ -518,7 +605,7 @@ function answerQuiz(label){
   const lead=ok?'正解。':'惜しい。';
   const text=`${lead} ${q.explanation||''}`.trim();
   showLunchSpeech(text);lunchState.history.push({role:'user',content:`クイズ回答: ${chosen}`},{role:'assistant',content:text});
-  lunchState.currentTopic=q.topic||lunchState.currentTopic;lunchState.quiz=null;lunchState.eventKinds.push('quiz_answer');lunchState.eventKinds=lunchState.eventKinds.slice(-8);$('lunchQuick').innerHTML='';setDeepen(true);setLunchNote('もう少し知りたければ「詳しく」。食べるなら「続ける」。');setContinueLock(10);
+  lunchState.currentTopic=q.topic||lunchState.currentTopic;lunchState.quiz=null;clearQuizCard();lunchState.eventKinds.push('quiz_answer');lunchState.eventKinds=lunchState.eventKinds.slice(-8);$('lunchQuick').innerHTML='';setDeepen(true);setLunchNote('もう少し知りたければ「詳しく」。食べるなら「続ける」。');setContinueLock(10);
 }
 
 function answerFullness(v){
@@ -566,7 +653,7 @@ async function answerDetour(v){
 function setContinueLock(n){clearInterval(continueLock);let b=$('continueBtn'),left=n;b.disabled=true;b.textContent=`続ける　あと${left}秒`;continueLock=setInterval(()=>{left--;if(left<=0){clearInterval(continueLock);b.disabled=false;b.textContent='続ける'}else b.textContent=`続ける　あと${left}秒`},1000)}
 function finishLunchManual(){if(secs()<900&&!confirm('まだ15分前だけど、今日はここで終える？'))return;finishLunch()}
 function finishLunch(){
-  clearInterval(timer);clearInterval(continueLock);
+  clearInterval(timer);clearInterval(continueLock);clearQuizCard();
   const min=Math.max(1,Math.round(secs()/60));const f=lastItem(lunchState.fullness)||'-';const end=secs()>=900?'complete':'manual';
   const rec={date:new Date().toISOString(),place:lunchState.place,menu:lunchState.menu,size:lunchState.size,minutes:min,fullness:f,end,chew:lunchState.chewChoice||'',detour:lunchState.detourDone,topic:lunchState.currentTopic||''};
   const ls=logs();ls.push(rec);localStorage.setItem('hirushika:logs',JSON.stringify(ls));
