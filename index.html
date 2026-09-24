@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#4b3427">
 <meta name="apple-mobile-web-app-capable" content="yes">
-<title>ひるしか Ver.0.69</title>
+<title>ひるしか Ver.0.70</title>
 <link rel="manifest" href="manifest.webmanifest">
 <style>
 :root{--bg:#f6efe4;--card:#fffaf2;--ink:#4b3427;--accent:#c78c52;--line:#e6d3bf;--soft:#f0e3d5;--ok:#e7f1e6}
@@ -58,7 +58,7 @@ main{max-width:560px;margin:auto;min-height:100dvh;padding:16px 16px calc(24px +
 }
 @media(min-width:600px){main{padding:24px}.card{min-height:700px}}
 
-/* v0.69 mobile full-width accessibility tuning */
+/* v0.70 mobile full-width accessibility tuning */
 @media (max-width: 768px) {
   html, body {
     width: 100%;
@@ -172,7 +172,7 @@ main{max-width:560px;margin:auto;min-height:100dvh;padding:16px 16px calc(24px +
 }
 
 
-/* v0.69 lunch: illustration stays visible above the scrolling conversation */
+/* v0.70 lunch: illustration stays visible above the scrolling conversation */
 #lunch{height:100dvh;overflow:hidden;}
 #lunch .mini{display:none;}
 #lunch .scene-stage{flex:0 0 auto;position:relative;background:var(--card);z-index:3;padding:2px 0 8px;}
@@ -187,7 +187,7 @@ main{max-width:560px;margin:auto;min-height:100dvh;padding:16px 16px calc(24px +
 }
 
 
-/* v0.69: pinned quiz question + deletable road entries */
+/* v0.70: pinned quiz question + deletable road entries */
 .quiz-card{
   position:sticky;
   top:0;
@@ -235,6 +235,10 @@ main{max-width:560px;margin:auto;min-height:100dvh;padding:16px 16px calc(24px +
   .road-delete{font-size:15px;min-height:44px}
 }
 
+
+/* v0.70: road empty-state visibility fix */
+.road-empty.hidden{display:none !important;}
+
 </style>
 </head>
 <body><main>
@@ -250,7 +254,7 @@ main{max-width:560px;margin:auto;min-height:100dvh;padding:16px 16px calc(24px +
     <button class="btn small ghost" onclick="showSettings()">AI接続設定</button>
     <button id="installBtn" class="btn hidden">ホーム画面に追加</button>
   </div>
-  <p class="muted">Ver.0.69｜スマホ全面表示</p>
+  <p class="muted">Ver.0.70｜スマホ全面表示</p>
 </section>
 
 <section id="road" class="card hidden">
@@ -261,7 +265,7 @@ main{max-width:560px;margin:auto;min-height:100dvh;padding:16px 16px calc(24px +
   <div id="roadList" class="road-list"></div>
   <div id="roadEmpty" class="road-empty hidden">
     <img src="assets/hirushika-road-empty.png" alt="まだ昼の足あとがない">
-    <p>まだ、昼の足あとがないな。<br>さあ、今日から行こう。</p>
+    <p>まだ、昼の足あとがないな。<br>さあ、いまから行こう。</p>
     <button class="btn primary" onclick="showStart()">最初の昼へ</button>
   </div>
   <div class="btns" style="margin-top:16px"><button class="btn" onclick="goHome()">ホームへ</button></div>
@@ -536,7 +540,7 @@ function chooseLunchTask(){
     if(!lunchState.after15Started)return 'after15_intro';
     return 'after15_companion';
   }
-  // v0.69: 噛む意識は前半で一度。2〜3分あたりで一口だけ数える。
+  // v0.70: 噛む意識は前半で一度。2〜3分あたりで一口だけ数える。
   if(s>=150 && !lunchState.chewDone && !lunchState.chewAwaitingDone)return 'chew';
   // 10〜12分あたりで一度だけ思い出す。再度数えさせない。
   if(lunchState.chewDone && !lunchState.chewRecallDone && s>=600 && s<=720)return 'chew_recall';
