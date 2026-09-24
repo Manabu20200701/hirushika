@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#4b3427">
 <meta name="apple-mobile-web-app-capable" content="yes">
-<title>ひるしか Ver.0.70</title>
+<title>ひるしか Ver.0.71</title>
 <link rel="manifest" href="manifest.webmanifest">
 <style>
 :root{--bg:#f6efe4;--card:#fffaf2;--ink:#4b3427;--accent:#c78c52;--line:#e6d3bf;--soft:#f0e3d5;--ok:#e7f1e6}
@@ -58,7 +58,7 @@ main{max-width:560px;margin:auto;min-height:100dvh;padding:16px 16px calc(24px +
 }
 @media(min-width:600px){main{padding:24px}.card{min-height:700px}}
 
-/* v0.70 mobile full-width accessibility tuning */
+/* v0.71 mobile full-width accessibility tuning */
 @media (max-width: 768px) {
   html, body {
     width: 100%;
@@ -172,7 +172,7 @@ main{max-width:560px;margin:auto;min-height:100dvh;padding:16px 16px calc(24px +
 }
 
 
-/* v0.70 lunch: illustration stays visible above the scrolling conversation */
+/* v0.71 lunch: illustration stays visible above the scrolling conversation */
 #lunch{height:100dvh;overflow:hidden;}
 #lunch .mini{display:none;}
 #lunch .scene-stage{flex:0 0 auto;position:relative;background:var(--card);z-index:3;padding:2px 0 8px;}
@@ -187,7 +187,7 @@ main{max-width:560px;margin:auto;min-height:100dvh;padding:16px 16px calc(24px +
 }
 
 
-/* v0.70: pinned quiz question + deletable road entries */
+/* v0.71: pinned quiz question + deletable road entries */
 .quiz-card{
   position:sticky;
   top:0;
@@ -236,8 +236,41 @@ main{max-width:560px;margin:auto;min-height:100dvh;padding:16px 16px calc(24px +
 }
 
 
-/* v0.70: road empty-state visibility fix */
+/* v0.71: road empty-state visibility fix */
 .road-empty.hidden{display:none !important;}
+
+
+/* v0.71: hirushika road hero + footer polish */
+.road-hero{margin:0 0 20px;}
+.road-hero img{
+  width:100% !important;
+  max-width:none !important;
+  display:block;
+  border-radius:18px;
+}
+.road-footer{
+  margin:28px 0 10px;
+  text-align:center;
+}
+.road-footer img{
+  width:min(68vw,360px);
+  max-width:100%;
+  height:auto;
+  display:block;
+  margin:0 auto 10px;
+}
+.road-footer-copy{
+  font-size:18px;
+  line-height:1.6;
+  color:var(--ink);
+  opacity:.9;
+}
+@media (max-width:768px){
+  .road-hero{margin-left:-6px;margin-right:-6px;}
+  .road-hero img{width:calc(100% + 12px) !important;}
+  .road-footer img{width:min(76vw,380px);}
+  .road-footer-copy{font-size:19px;}
+}
 
 </style>
 </head>
@@ -254,7 +287,7 @@ main{max-width:560px;margin:auto;min-height:100dvh;padding:16px 16px calc(24px +
     <button class="btn small ghost" onclick="showSettings()">AI接続設定</button>
     <button id="installBtn" class="btn hidden">ホーム画面に追加</button>
   </div>
-  <p class="muted">Ver.0.70｜スマホ全面表示</p>
+  <p class="muted">Ver.0.71｜スマホ全面表示</p>
 </section>
 
 <section id="road" class="card hidden">
@@ -268,7 +301,13 @@ main{max-width:560px;margin:auto;min-height:100dvh;padding:16px 16px calc(24px +
     <p>まだ、昼の足あとがないな。<br>さあ、いまから行こう。</p>
     <button class="btn primary" onclick="showStart()">最初の昼へ</button>
   </div>
-  <div class="btns" style="margin-top:16px"><button class="btn" onclick="goHome()">ホームへ</button></div>
+  <div class="btns" style="margin-top:16px">
+  <div id="roadFooter" class="road-footer">
+    <img src="assets/hirushika-road-empty.png" alt="ひるしか">
+    <div class="road-footer-copy">🦌 また次の昼にな。</div>
+  </div>
+
+<button class="btn" onclick="goHome()">ホームへ</button></div>
 </section>
 
 <section id="settings" class="card hidden">
@@ -540,7 +579,7 @@ function chooseLunchTask(){
     if(!lunchState.after15Started)return 'after15_intro';
     return 'after15_companion';
   }
-  // v0.70: 噛む意識は前半で一度。2〜3分あたりで一口だけ数える。
+  // v0.71: 噛む意識は前半で一度。2〜3分あたりで一口だけ数える。
   if(s>=150 && !lunchState.chewDone && !lunchState.chewAwaitingDone)return 'chew';
   // 10〜12分あたりで一度だけ思い出す。再度数えさせない。
   if(lunchState.chewDone && !lunchState.chewRecallDone && s>=600 && s<=720)return 'chew_recall';
