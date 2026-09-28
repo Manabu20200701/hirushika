@@ -239,39 +239,6 @@ main{max-width:560px;margin:auto;min-height:100dvh;padding:16px 16px calc(24px +
 /* v0.71: road empty-state visibility fix */
 .road-empty.hidden{display:none !important;}
 
-
-/* v0.71: hirushika road hero + footer polish */
-.road-hero{margin:0 0 20px;}
-.road-hero img{
-  width:100% !important;
-  max-width:none !important;
-  display:block;
-  border-radius:18px;
-}
-.road-footer{
-  margin:28px 0 10px;
-  text-align:center;
-}
-.road-footer img{
-  width:min(68vw,360px);
-  max-width:100%;
-  height:auto;
-  display:block;
-  margin:0 auto 10px;
-}
-.road-footer-copy{
-  font-size:18px;
-  line-height:1.6;
-  color:var(--ink);
-  opacity:.9;
-}
-@media (max-width:768px){
-  .road-hero{margin-left:-6px;margin-right:-6px;}
-  .road-hero img{width:calc(100% + 12px) !important;}
-  .road-footer img{width:min(76vw,380px);}
-  .road-footer-copy{font-size:19px;}
-}
-
 </style>
 </head>
 <body><main>
@@ -301,13 +268,7 @@ main{max-width:560px;margin:auto;min-height:100dvh;padding:16px 16px calc(24px +
     <p>まだ、昼の足あとがないな。<br>さあ、いまから行こう。</p>
     <button class="btn primary" onclick="showStart()">最初の昼へ</button>
   </div>
-  <div class="btns" style="margin-top:16px">
-  <div id="roadFooter" class="road-footer">
-    <img src="assets/hirushika-road-empty.png" alt="ひるしか">
-    <div class="road-footer-copy">🦌 また次の昼にな。</div>
-  </div>
-
-<button class="btn" onclick="goHome()">ホームへ</button></div>
+  <div class="btns" style="margin-top:16px"><button class="btn" onclick="goHome()">ホームへ</button></div>
 </section>
 
 <section id="settings" class="card hidden">
@@ -684,7 +645,17 @@ async function runLunchTask(task,extra={}){
       lunchState.after15Started=true;
       setLunchNote('15分。もう時間は気にしなくていい。食べ終わるまで、ここにいるぞ。');
     } else if(eventKind==='after15_companion'){
-      setLunchNote('もう時間は気にしなくていい。食べ終わったら「食事を終了」でOK。');
+      setLunchNote('');
+      // 15分到達の説明は最初の一度だけ。以降は時間の話を繰り返さない。
+      if(/15分|時間は気に|食べ終わるまで/.test(speech)){
+        const gentle='まだここにいるぞ。残りも、ひと口ずつでいい。';
+        const bubbles=$('lunchChat').querySelectorAll('.bubble.ai');
+        const last=bubbles[bubbles.length-1];
+        if(last) last.textContent=`🦌 ${gentle}`;
+        if(lunchState.history.length){
+          lunchState.history[lunchState.history.length-1]={role:'assistant',content:gentle};
+        }
+      }
     } else if(eventKind==='talk' && (task==='quiz'||task==='detour')){
       // AIの構造化応答が壊れても、未回答クイズ状態を絶対に残さない。
       lunchState.quiz=null; clearQuizCard(); lunchState.detour=null; $('lunchQuick').innerHTML='';
@@ -762,7 +733,16 @@ async function answerDetour(v){
   lunchState.eventKinds.push('detour_answer');lunchState.eventKinds=lunchState.eventKinds.slice(-10);lunchState.eventIds.push('detour_answer');lunchState.eventIds=lunchState.eventIds.slice(-12);
   const ph=appendMsg('lunchChat','ai','…',true);
   try{
-    const j=await callLunchTask('detour_reply',{answer:v,topic:lunchState.detour?.topic||''});ph.remove();const text=(j.speech||j.reply||'その選び方、嫌いじゃない。じゃあ昼飯に戻ろう。').trim();showLunchSpeech(text);lunchState.history.push({role:'user',content:`昼の寄り道回答: ${v}`},{role:'assistant',content:text});if(j.topic)lunchState.currentTopic=j.topic;
+    const j=await callLunchTask('detour_reply',{answer:v,topic:lunchState.detour?.topic||''});ph.remove();
+    let text=(j.speech||j.reply||'').trim();
+    const generic=/^(まあ、ここは少し食べよう|その選び方、嫌いじゃない|じゃあ昼飯に戻ろう)/;
+    const key=String(v).trim().slice(0,8);
+    if(!text || generic.test(text) || (key && !text.includes(key))){
+      text=`「${v}」か。そこを選ぶの、ちょっと分かる。そんな昼も見てみたいな。じゃあ今の昼飯に戻ろう。`;
+    }
+    showLunchSpeech(text);
+    lunchState.history.push({role:'user',content:`昼の寄り道回答: ${v}`},{role:'assistant',content:text});
+    if(j.topic)lunchState.currentTopic=j.topic;
   }catch(e){ph.remove();showLunchSpeech('その選び方、嫌いじゃない。じゃあ昼飯に戻ろう。')}
   setLunchNote('');setScene('');setContinueLock(12);persistLunchSession();
 }
