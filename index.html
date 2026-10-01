@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#4b3427">
 <meta name="apple-mobile-web-app-capable" content="yes">
-<title>ひるしか Ver.0.71</title>
+<title>ひるしか Ver.0.72</title>
 <link rel="manifest" href="manifest.webmanifest">
 <style>
 :root{--bg:#f6efe4;--card:#fffaf2;--ink:#4b3427;--accent:#c78c52;--line:#e6d3bf;--soft:#f0e3d5;--ok:#e7f1e6}
@@ -239,6 +239,17 @@ main{max-width:560px;margin:auto;min-height:100dvh;padding:16px 16px calc(24px +
 /* v0.71: road empty-state visibility fix */
 .road-empty.hidden{display:none !important;}
 
+
+/* v0.72 smile stamp and optional lunch notes */
+.road-smiles{grid-column:1/-1;display:flex;align-items:center;justify-content:center;gap:10px;background:var(--soft);border-radius:16px;padding:10px}
+.smile-stamp{display:inline-block;width:54px;height:54px;border-radius:50%;background:url('assets/hirushika-good-lunch.png') 68% 42% / 160% auto no-repeat;flex-shrink:0}
+.road-time-wrap{display:flex;flex-direction:column;align-items:center;gap:5px;flex-shrink:0}
+.memo-box{margin:16px 0;padding:16px;border:1px solid var(--line);border-radius:18px;background:var(--soft)}
+.memo-input{display:block;width:100%;min-height:100px;resize:vertical;padding:14px;font:inherit;color:var(--ink);border:1px solid var(--line);border-radius:14px;margin:12px 0;background:white}
+.road-memo{white-space:pre-wrap;overflow-wrap:anywhere;margin-top:12px;line-height:1.6}
+.road-actions{flex-wrap:wrap;gap:12px;align-items:center}
+.road-edit{border:1px solid var(--line);background:var(--soft);color:var(--ink);padding:10px 14px;border-radius:14px;font-size:16px;min-height:48px}
+.memo-status{margin:6px 0;font-size:16px;line-height:1.6}
 </style>
 </head>
 <body><main>
@@ -254,7 +265,7 @@ main{max-width:560px;margin:auto;min-height:100dvh;padding:16px 16px calc(24px +
     <button class="btn small ghost" onclick="showSettings()">AI接続設定</button>
     <button id="installBtn" class="btn hidden">ホーム画面に追加</button>
   </div>
-  <p class="muted">Ver.0.71｜スマホ全面表示</p>
+  <p class="muted">Ver.0.72｜スマホ全面表示</p>
 </section>
 
 <section id="road" class="card hidden">
@@ -262,6 +273,7 @@ main{max-width:560px;margin:auto;min-height:100dvh;padding:16px 16px calc(24px +
   <div class="section-title">ひるしかロード</div>
   <p class="muted" style="margin-top:0">食べた昼が、今日をつくる。</p>
   <div id="roadStats" class="road-stats"></div>
+  <p class="muted" style="margin-top:0">15分くらい昼を楽しめた日は、ひるしかが少し嬉しそうになる。</p>
   <div id="roadList" class="road-list"></div>
   <div id="roadEmpty" class="road-empty hidden">
     <img src="assets/hirushika-road-empty.png" alt="まだ昼の足あとがない">
@@ -334,6 +346,13 @@ main{max-width:560px;margin:auto;min-height:100dvh;padding:16px 16px calc(24px +
   <div id="finishLine" class="msg ai" style="max-width:100%;margin:6px 0 10px"></div>
   <div id="summary" class="summary"></div>
   <div id="finishLog" class="memory"></div>
+  <div class="memo-box">
+    <label for="finishMemo">今日の昼、ひとこと残す？（任意）</label>
+    <div id="finishMemoChips" class="quick"></div>
+    <textarea id="finishMemo" class="memo-input" maxlength="200" placeholder="自由にひとこと（200文字まで）" oninput="saveFinishMemo()"></textarea>
+    <p class="muted">空欄のまま、次へ進んでも大丈夫。</p>
+    <div id="finishMemoStatus" class="memo-status" role="status" aria-live="polite"></div>
+  </div>
   <div class="btns"><button class="btn primary" onclick="showRoad()">ひるしかロードを見る</button><button class="btn" onclick="goHome()">ホームへ</button></div>
 </section>
 </main>
@@ -362,6 +381,29 @@ function recMonthKey(x){const d=new Date(x.date);return `${d.getFullYear()}-${St
 function showRoad(){
   clearInterval(timer);clearInterval(continueLock);hideAll();$('road').classList.remove('hidden');renderRoad();
 }
+const MEMO_CHOICES=['おいしかった','また来たい','ちょっと微妙','量が多かった','量がちょうどよかった'];
+let finishRecordDate=null;
+function renderMemoChips(target,input,onChange){
+  const holder=$(target);holder.innerHTML='';
+  MEMO_CHOICES.forEach(text=>{const b=document.createElement('button');b.type='button';b.className='chip';b.textContent=text;b.onclick=()=>{$(input).value=text;onChange()};holder.appendChild(b)});
+}
+function saveFinishMemo(){
+  const ls=logs(),rec=ls.find(x=>x.date===finishRecordDate);if(!rec)return;
+  rec.memo=$('finishMemo').value.slice(0,200).trim();
+  try{localStorage.setItem('hirushika:logs',JSON.stringify(ls));$('finishMemoStatus').textContent=rec.memo?'メモを保存しました。':''}
+  catch(e){$('finishMemoStatus').textContent='メモを保存できませんでした。端末の空き容量を確認してください。'}
+}
+function editRoadMemo(idx){
+  const rec=logs()[idx];if(!rec)return;
+  const box=$('memoEditor'+idx);box.innerHTML='';box.classList.add('memo-box');
+  const label=document.createElement('label');label.htmlFor='roadMemo'+idx;label.textContent='一言メモ（任意）';box.appendChild(label);
+  const chips=document.createElement('div');chips.id='roadMemoChips'+idx;chips.className='quick';box.appendChild(chips);
+  const input=document.createElement('textarea');input.id='roadMemo'+idx;input.className='memo-input';input.maxLength=200;input.value=rec.memo||'';input.placeholder='自由にひとこと（200文字まで）';box.appendChild(input);
+  renderMemoChips(chips.id,input.id,()=>{});
+  const buttons=document.createElement('div');buttons.className='row';box.appendChild(buttons);
+  const save=document.createElement('button');save.className='btn primary';save.textContent='保存';save.onclick=()=>{const ls=logs();if(!ls[idx]||ls[idx].date!==rec.date){renderRoad();return}ls[idx].memo=input.value.slice(0,200).trim();try{localStorage.setItem('hirushika:logs',JSON.stringify(ls));renderRoad()}catch(e){alert('メモを保存できませんでした。')}};buttons.appendChild(save);
+  const cancel=document.createElement('button');cancel.className='btn';cancel.textContent='キャンセル';cancel.onclick=()=>{box.innerHTML='';box.classList.remove('memo-box')};buttons.appendChild(cancel);input.focus();
+}
 function renderRoad(){
   const raw=logs();
   const all=raw.map((x,i)=>({...x,_idx:i})).reverse();
@@ -370,14 +412,17 @@ function renderRoad(){
   const avg=thisMonth.length?Math.round(thisMonth.reduce((a,x)=>a+Number(x.minutes||0),0)/thisMonth.length):0;
   const longest=thisMonth.length?Math.max(...thisMonth.map(x=>Number(x.minutes||0))):0;
   stats.innerHTML=`<div class="stat"><b>${thisMonth.length}</b><span>今月の昼</span></div><div class="stat"><b>${avg||'-'}${avg?'分':''}</b><span>平均時間</span></div><div class="stat"><b>${longest||'-'}${longest?'分':''}</b><span>最長</span></div>`;
+  stats.innerHTML+=`<div class="road-smiles"><span class="smile-stamp" aria-hidden="true"></span><span>ひるしか笑顔 <b>${thisMonth.filter(x=>Number(x.minutes)>=15).length}回</b></span></div>`;
   if(!all.length){list.innerHTML='';empty.classList.remove('hidden');return}
   empty.classList.add('hidden');
   list.innerHTML=all.map(x=>`<div class="road-item">
-    <div class="road-top"><span class="road-date">${localDay(x)}</span><span class="road-time">${Number(x.minutes||0)}分</span></div>
+    <div class="road-top"><span class="road-date">${localDay(x)}</span><span class="road-time-wrap"><span class="road-time">${Number(x.minutes||0)}分</span>${Number(x.minutes)>=15?'<span class="smile-stamp" role="img" aria-label="笑顔のひるしか"></span>':''}</span></div>
     <div class="road-menu">${escapeHtml(x.menu||'未登録')}</div>
     <div class="road-place">${escapeHtml(x.place||'未登録')} / ${escapeHtml(x.size||'')}</div>
     ${x.fullness&&x.fullness!=='-'?`<div class="road-full">最後の満腹度：${escapeHtml(String(x.fullness))}分目</div>`:''}
-    <div class="road-actions"><button class="road-delete" onclick="deleteRoadItem(${x._idx})">この記録を削除</button></div>
+    ${x.memo?`<div class="road-memo">「${escapeHtml(x.memo)}」</div>`:''}
+    <div id="memoEditor${x._idx}"></div>
+    <div class="road-actions"><button class="road-edit" onclick="editRoadMemo(${x._idx})">${x.memo?'メモを編集':'メモを追加'}</button><button class="road-delete" onclick="deleteRoadItem(${x._idx})">この記録を削除</button></div>
   </div>`).join('');
 }
 function deleteRoadItem(idx){
@@ -752,8 +797,9 @@ function finishLunchManual(){if(secs()<900&&!confirm('まだ15分前だけど、
 function finishLunch(){
   clearInterval(timer);clearInterval(continueLock);clearQuizCard();clearLunchSession();
   const min=Math.max(1,Math.round(secs()/60));const f=lastItem(lunchState.fullness)||'-';const end=secs()>=900?'complete':'manual';
-  const rec={date:new Date().toISOString(),place:lunchState.place,menu:lunchState.menu,size:lunchState.size,minutes:min,fullness:f,end,chew:lunchState.chewChoice||'',detour:lunchState.detourDone,topic:lunchState.currentTopic||''};
+  const rec={date:new Date().toISOString(),place:lunchState.place,menu:lunchState.menu,size:lunchState.size,minutes:min,memo:'',fullness:f,end,chew:lunchState.chewChoice||'',detour:lunchState.detourDone,topic:lunchState.currentTopic||''};
   const ls=logs();ls.push(rec);localStorage.setItem('hirushika:logs',JSON.stringify(ls));
+  finishRecordDate=rec.date;$('finishMemo').value='';$('finishMemoStatus').textContent='';renderMemoChips('finishMemoChips','finishMemo',saveFinishMemo);
   hideAll();$('finish').classList.remove('hidden');
   $('finishLine').textContent='🦌 '+(min>=15?'気づけば、ちゃんと昼を食ったな。':`今日は${min}分。目標まではあと${Math.max(0,15-min)}分だったな。でも記録は残した。次またやろう。`);
   $('summary').innerHTML=`<b>${min}分</b>のランチ。<br>${lunchState.place} / ${lunchState.menu} / ${lunchState.size}<br>最後の満腹度：<b>${f==='-'?'未記録':f+'分目'}</b>`;
