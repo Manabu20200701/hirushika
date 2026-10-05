@@ -1,4 +1,4 @@
-const CACHE='hirushika-v0-72';
+const CACHE='hirushika-v0-73-trial';
 const ASSETS=[
   './','./index.html','./manifest.webmanifest',
   './assets/hirushika-hero.png','./assets/hirushika.png',
