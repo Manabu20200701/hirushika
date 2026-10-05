@@ -1,0 +1,69 @@
+ひるしか v0.73-trial セットアップ
+
+目的
+・T01〜T20の匿名テスターIDで利用を識別
+・氏名、メール、パスワードは取得しない
+・ランチ開始/終了、15分到達、メモ、ひるしかロード閲覧などをCloudflare D1へ記録
+・ログ送信が失敗しても、ひるしか本体は止めない
+
+1. CloudflareでD1データベースを作成
+Cloudflare Dashboard
+→ Storage & Databases
+→ D1
+→ Create database
+名前例: hirushika-trial
+
+2. schema.sql を実行
+作成したD1
+→ Console
+→ schema.sql の内容を貼り付けて実行
+
+3. WorkerへD1を接続
+Cloudflare Dashboard
+→ Workers & Pages
+→ hirushika-ai
+→ Settings
+→ Bindings
+→ Add binding
+→ D1 database
+Variable name: HIRUSHIKA_DB
+Database: 1で作った hirushika-trial
+→ Save
+
+4. Workerコードを更新
+このブランチの worker.js（または worker.txt）をCloudflare Workerへ反映してDeploy
+OPENAI_API_KEYは今まで通り保持
+
+5. フロントを反映
+trial-v0.73 ブランチの内容を確認後、mainへ反映
+GitHub PagesのURLは今までと同じ
+
+6. 動作確認
+初回起動
+→ T01 と入力
+→ ランチ開始
+→ 数分後に終了
+→ ひるしかロードを開く
+
+Cloudflare D1
+→ Console
+→ 下記を実行
+SELECT * FROM trial_events ORDER BY id DESC LIMIT 20;
+
+lunch_started / lunch_finished / road_opened が見えればOK
+
+7. トライアル運用
+・テスターへ T01, T02 ... と割り当て
+・URLは共通
+・初回だけID入力
+・IDは同じ端末のlocalStorageに保存される
+・これは「ログイン認証」ではなく、トライアル利用識別用
+・URLとIDを知る人は利用できるため、本格公開時は別途認証を検討する
+
+8. 集計
+TRIAL_REPORT.sql をD1 Consoleで実行すると、テスター別/セッション別の基本集計を確認可能
+
+注意
+・個人名、メールアドレスはアプリに入力させない
+・テスターIDと氏名の対応表は、必要なら木村さん側で別管理
+・API費用はOpenAI API側で発生。Auto-rechargeはOFF推奨
