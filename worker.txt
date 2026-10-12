@@ -12,6 +12,40 @@ export default {
     });
     if (request.method === "OPTIONS") return new Response(null,{status:204,headers:corsHeaders});
     if (url.pathname === "/health") return json({ok:true,service:"hirushika-ai",message:"ひるしか、起きてるぞ。"});
+    if (url.pathname === "/event" && request.method === "POST") {
+      try {
+        if (!env.HIRUSHIKA_DB) return json({ok:false,error:"HIRUSHIKA_DB が設定されていません"},503);
+        const body = await request.json();
+        const testerId = String(body.tester_id || "").trim().toUpperCase();
+        const sessionId = String(body.session_id || "").slice(0,120);
+        const eventType = String(body.event_type || "").slice(0,80);
+        const timestamp = String(body.timestamp || new Date().toISOString()).slice(0,40);
+        if (!/^T(0[1-9]|1[0-9]|20)$/.test(testerId)) return json({ok:false,error:"Invalid tester_id"},400);
+        if (!eventType) return json({ok:false,error:"event_type is required"},400);
+
+        const n = v => Math.max(0, Math.floor(Number(v) || 0));
+        const b = v => v ? 1 : 0;
+        const extraJson = JSON.stringify(body.extra && typeof body.extra === "object" ? body.extra : {}).slice(0,4000);
+
+        await env.HIRUSHIKA_DB.prepare(`
+          INSERT INTO trial_events (
+            tester_id, session_id, event_type, event_timestamp,
+            meal_duration_sec, reached_15min, finished, memo_present,
+            road_opened, menu_choice_used, chew_done, detour_done,
+            resumed_after_background, extra_json
+          ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        `).bind(
+          testerId, sessionId, eventType, timestamp,
+          n(body.meal_duration_sec), b(body.reached_15min), b(body.finished), b(body.memo_present),
+          b(body.road_opened), b(body.menu_choice_used), b(body.chew_done), b(body.detour_done),
+          b(body.resumed_after_background), extraJson
+        ).run();
+
+        return json({ok:true});
+      } catch (error) {
+        return json({ok:false,error:error?.message || "Event logging failed"},500);
+      }
+    }
     if (url.pathname !== "/chat" || request.method !== "POST") return json({ok:false,error:"Not found"},404);
     try {
       if (!env.OPENAI_API_KEY) return json({ok:false,error:"OPENAI_API_KEY が設定されていません"},500);

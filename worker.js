@@ -12,6 +12,40 @@ export default {
     });
     if (request.method === "OPTIONS") return new Response(null,{status:204,headers:corsHeaders});
     if (url.pathname === "/health") return json({ok:true,service:"hirushika-ai",message:"ひるしか、起きてるぞ。"});
+    if (url.pathname === "/event" && request.method === "POST") {
+      try {
+        if (!env.HIRUSHIKA_DB) return json({ok:false,error:"HIRUSHIKA_DB が設定されていません"},503);
+        const body = await request.json();
+        const testerId = String(body.tester_id || "").trim().toUpperCase();
+        const sessionId = String(body.session_id || "").slice(0,120);
+        const eventType = String(body.event_type || "").slice(0,80);
+        const timestamp = String(body.timestamp || new Date().toISOString()).slice(0,40);
+        if (!/^T(0[1-9]|1[0-9]|20)$/.test(testerId)) return json({ok:false,error:"Invalid tester_id"},400);
+        if (!eventType) return json({ok:false,error:"event_type is required"},400);
+
+        const n = v => Math.max(0, Math.floor(Number(v) || 0));
+        const b = v => v ? 1 : 0;
+        const extraJson = JSON.stringify(body.extra && typeof body.extra === "object" ? body.extra : {}).slice(0,4000);
+
+        await env.HIRUSHIKA_DB.prepare(`
+          INSERT INTO trial_events (
+            tester_id, session_id, event_type, event_timestamp,
+            meal_duration_sec, reached_15min, finished, memo_present,
+            road_opened, menu_choice_used, chew_done, detour_done,
+            resumed_after_background, extra_json
+          ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        `).bind(
+          testerId, sessionId, eventType, timestamp,
+          n(body.meal_duration_sec), b(body.reached_15min), b(body.finished), b(body.memo_present),
+          b(body.road_opened), b(body.menu_choice_used), b(body.chew_done), b(body.detour_done),
+          b(body.resumed_after_background), extraJson
+        ).run();
+
+        return json({ok:true});
+      } catch (error) {
+        return json({ok:false,error:error?.message || "Event logging failed"},500);
+      }
+    }
     if (url.pathname !== "/chat" || request.method !== "POST") return json({ok:false,error:"Not found"},404);
     try {
       if (!env.OPENAI_API_KEY) return json({ok:false,error:"OPENAI_API_KEY が設定されていません"},500);
@@ -69,10 +103,10 @@ ${recentSpeeches.map((x,i)=>`${i+1}. ${x}`).join('\n')||'なし'}
           fullness:`腹何分目かを聞く。説明は短く。event_idはfullness。kindはfullness。`,
           quiz:`雑学クイズを1問。唐突でもよいが「突然だけど」「ここで昼飯にちなんで」など一言の導入を必ず入れる。食事中に考えられる軽さ。A/B/Cの3択。必ずchoicesを3件、correctをA/B/Cのいずれかで返す。正解と解説も返すがspeechでは答えを言わない。語源問題は禁止。event_idはquiz。kindはquiz。`,
           detour:`『昼の寄り道』を1回。食事と直接関係しない、どうでもいいけど少し考えたくなる問いを出す。例: どっち派、日常の小さな疑問、100年前の人を一人呼ぶなら、など。重くしない。30〜60秒考えながら食べられるもの。A/B/Cの3択か短い選択肢を3つ返す。speechでは「ずっと飯の話もなんだから、30秒だけ寄り道するか」など自然に導入。event_idはdetour。kindはdetour。`,
-          detour_reply:`昼の寄り道の回答「${extra.answer||''}」に、ひるしかとして1〜2文だけ軽く反応する。正解不正解はつけない。最後は昼飯へ自然に戻す。event_idはdetour_reply。kindはtalk。`,
+          detour_reply:`昼の寄り道の回答「${extra.answer||''}」を絶対にスルーしない。最初の1文で、その回答内容を具体的に拾って反応する。汎用的な「まあ、ここは少し食べよう」「その選び方、嫌いじゃない」だけで終えない。正解不正解はつけず、1〜2文で少し広げてから昼飯へ自然に戻す。event_idはdetour_reply。kindはtalk。`,
           deepen:`現在の話題「${topic||'直前の話題'}」を本当に一段深掘りする。深掘り${deepCount}回目。30〜60秒で読めるが長すぎない。新しい具体情報を入れる。event_idはdeepen。kindはtalk、can_deepen=true。`,
           after15_intro:`15分に到達した最初の一度だけ。終了や退場ではなく、『15分。いい昼になったな。もう時間は気にしなくていい。食べ終わるまで、ここにいるぞ。』くらいの温度で短く伝える。event_idはafter15_intro。kindはafter15_intro。`,
-          after15_companion:`15分以降の余韻モード。クイズ・噛む指導・満腹確認はしない。食事がまだ続いている前提で、1〜2文だけ穏やかに付き合う。退場・締め・好きな速さで、のような突き放す表現は禁止。event_idはafter15_companion。kindはafter15_companion。`
+          after15_companion:`15分以降の余韻モード。クイズ・噛む指導・満腹確認はしない。食事がまだ続いている前提で、1〜2文だけ穏やかに付き合う。「15分」「時間は気にしなくていい」「食べ終わるまでここにいる」など、15分到達時に一度伝えた内容は繰り返さない。料理の終盤や余韻を短く話す。退場・締め・好きな速さで、のような突き放す表現は禁止。event_idはafter15_companion。kindはafter15_companion。`
         };
         taskPrompt = map[task] || map.continue;
       }
