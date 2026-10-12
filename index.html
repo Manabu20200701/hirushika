@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#4b3427">
 <meta name="apple-mobile-web-app-capable" content="yes">
-<title>ひるしか Ver.0.73-trial</title>
+<title>ひるしか Ver.0.74-trial</title>
 <link rel="manifest" href="manifest.webmanifest">
 <style>
 :root{--bg:#f6efe4;--card:#fffaf2;--ink:#4b3427;--accent:#c78c52;--line:#e6d3bf;--soft:#f0e3d5;--ok:#e7f1e6}
@@ -240,7 +240,7 @@ main{max-width:560px;margin:auto;min-height:100dvh;padding:16px 16px calc(24px +
 .road-empty.hidden{display:none !important;}
 
 
-/* v0.73-trial smile stamp and optional lunch notes */
+/* v0.74-trial smile stamp and optional lunch notes */
 .road-smiles{grid-column:1/-1;display:flex;align-items:center;justify-content:center;gap:10px;background:var(--soft);border-radius:16px;padding:10px}
 .smile-stamp{display:inline-block;width:54px;height:54px;border-radius:50%;background:url('assets/hirushika-good-lunch.png') 68% 42% / 160% auto no-repeat;flex-shrink:0}
 .road-time-wrap{display:flex;flex-direction:column;align-items:center;gap:5px;flex-shrink:0}
@@ -251,7 +251,7 @@ main{max-width:560px;margin:auto;min-height:100dvh;padding:16px 16px calc(24px +
 .road-edit{border:1px solid var(--line);background:var(--soft);color:var(--ink);padding:10px 14px;border-radius:14px;font-size:16px;min-height:48px}
 .memo-status{margin:6px 0;font-size:16px;line-height:1.6}
 
-/* v0.73-trial: tester gate */
+/* v0.74-trial: tester gate */
 .trial-id-line{margin:8px 0 2px;font-size:14px;opacity:.72}
 .trial-gate{text-align:left;justify-content:center}
 .trial-gate .brand{margin-left:auto;margin-right:auto}
@@ -280,11 +280,10 @@ main{max-width:560px;margin:auto;min-height:100dvh;padding:16px 16px calc(24px +
     <button class="btn primary" onclick="showStart()">ランチする</button>
     <button class="btn" onclick="startConsult()">何食べる？</button>
     <button class="btn" onclick="showRoad()">ひるしかロード</button>
-    <button class="btn small ghost" onclick="showSettings()">AI接続設定</button>
     <button id="installBtn" class="btn hidden">ホーム画面に追加</button>
   </div>
-  <div class="trial-id-line"><span id="testerBadge" class="trial-id-badge"></span> <button class="chip" type="button" onclick="changeTesterId()">ID変更</button></div>
-  <p class="muted">Ver.0.73-trial｜スマホ全面表示</p>
+  <div class="trial-id-line"><span id="testerBadge" class="trial-id-badge"></span></div>
+  <p class="muted">Ver.0.74-trial｜スマホ全面表示</p>
 </section>
 
 <section id="road" class="card hidden">
@@ -443,8 +442,9 @@ function hideAll(){['trialGate','home','road','settings','consult','start','lunc
 function goHome(){if(lunchState&&!$('lunch').classList.contains('hidden'))persistLunchSession();clearInterval(timer);clearInterval(continueLock);clearQuizCard();hideAll();$('home').classList.remove('hidden');refreshTesterBadge();loadPlaces()}
 function showSettings(){hideAll();$('settings').classList.remove('hidden');$('apiUrl').value=localStorage.getItem(APIKEY)||''}
 async function saveApiUrl(){let u=$('apiUrl').value.trim().replace(/\/$/,'');localStorage.setItem(APIKEY,u);let s=$('apiStatus');s.className='status';s.classList.remove('hidden');s.textContent='接続確認中…';try{let r=await fetch(u+'/health');if(!r.ok)throw new Error();s.classList.add('ok');s.textContent='接続OK。AIひるしかを使えます。'}catch(e){s.classList.add('ng');s.textContent='接続できません。Worker URLを確認してください。'}}
-function apiUrl(){return (localStorage.getItem(APIKEY)||'').replace(/\/$/,'')}
-function requireApi(){if(!apiUrl()){showSettings();let s=$('apiStatus');s.className='status ng';s.classList.remove('hidden');s.textContent='先にAI接続設定が必要です。';return false}return true}
+const WORKER_URL='https://hirushika-ai.corona-pictures1997.workers.dev';
+function apiUrl(){return WORKER_URL}
+function requireApi(){return true}
 
 function appendMsg(elId,who,text,typing=false){let box=$(elId),d=document.createElement('div');d.className='msg '+(who==='ai'?'ai':'user')+(typing?' typing':'');d.textContent=(who==='ai'?'🦌 ':'')+text;box.appendChild(d);box.scrollTop=box.scrollHeight;return d}
 function renderQuick(elId,items,handler,wait=0){let el=$(elId);el.innerHTML='';(items||[]).slice(0,4).forEach((t,i)=>{let b=document.createElement('button');b.className='chip';b.textContent=t;b.onclick=()=>handler(t);el.appendChild(b);if(wait>0){b.disabled=true;setTimeout(()=>b.disabled=false,wait*1000)}})}
